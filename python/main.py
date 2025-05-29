@@ -28,7 +28,6 @@ def converteste_ani_la_float(df, ani):
         df[an] = pd.to_numeric(df[an], errors='coerce')
     return df
 
-# Culori consistente pentru județe și România
 JUD_COLORS = {
     "Alba": "#1976D2",
     "Brasov": "#FF9800",
@@ -162,21 +161,39 @@ def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
     df_judet = df[df['Judete'] == judet_selectat]
     fig = go.Figure()
     legend_labels = []
+
+    # Paleta distincta pentru niveluri de educatie (max 10, extinde daca ai mai multe)
+    PALETA_EDUCATIE = [
+        "#1976D2",  # albastru
+        "#FF9800",  # portocaliu
+        "#43A047",  # verde
+        "#8E24AA",  # mov
+        "#E53935",  # rosu
+        "#00ACC1",  # turcoaz
+        "#FDD835",  # galben
+        "#6D4C41",  # maro
+        "#C0CA33",  # lime
+        "#F06292",  # roz
+    ]
+
+    # Corect: construim df_stacked
     df_stacked = df_judet.set_index('Niveluri de educatie')[ani].T
     df_stacked = df_stacked.reset_index().rename(columns={'index': 'An'})
     df_stacked['An'] = ani_num
+
     for i, col in enumerate(df_stacked.columns[1:]):
+        color = PALETA_EDUCATIE[i % len(PALETA_EDUCATIE)]
         fig.add_trace(go.Bar(
             x=df_stacked['An'],
             y=df_stacked[col],
             name=col,
             text=df_stacked[col],
             textfont=dict(size=12),
-            marker_color=PALETA[i % len(PALETA)],
+            marker_color=color,
             marker_line=dict(width=1.5, color="#222"),
             hovertemplate=f"{col}: "+"%{{y}}"
         ))
-        legend_labels.append((PALETA[i % len(PALETA)], col))
+        legend_labels.append((color, col))
     fig.update_layout(
         width=1600, height=600,
         font=dict(family="Segoe UI, Arial", size=12),
@@ -196,6 +213,7 @@ def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
     st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
     st.dataframe(df_judet.set_index('Niveluri de educatie')[ani])
     st.divider()
+
 
 def bar_chart_an_interactiv(df, an, titlu, ylabel, nr_fig):
     st.divider()
@@ -602,8 +620,8 @@ def main():
 
     elif optiune == "Corelație rată șomaj - ocupare (scatter)":
         nr_fig += 5
-        st.header("Corelație între rata șomajului și rata de ocupare (scatter)")
-        st.info("Acest scatter plot arată relația dintre rata șomajului și rata de ocupare a forței de muncă.")
+        st.header("Corelație între rata șomajului și rata de ocupare a resurselor de muncă (scatter)")
+        st.info("Acest scatter plot arată relația dintre rata șomajului și rata de ocupare a resurselor de muncă.")
         df_somaj = incarca_date('Somaj')
         df_resurse = incarca_date('Resurse')
         ani = sorted([col for col in df_somaj.columns if col.startswith('Anul')], key=lambda x: int(x.split()[-1]), reverse=True)
