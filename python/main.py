@@ -341,7 +341,7 @@ def pie_charts_salariati_judete(df, ani, an_selectat, nr_fig):
 
     show_lines = st.checkbox("Afișează liniile pentru porțiunile mici din pie chart", value=False)
 
-    df['Activitate scurtă'] = df['Activitati ale economiei'].apply(prescurteaza_activitate)
+    df['Activitate'] = df['Activitati ale economiei'].apply(prescurteaza_activitate)
 
     for judet in judete:
         df_judet = df[df['Judete'] == judet]
@@ -349,7 +349,7 @@ def pie_charts_salariati_judete(df, ani, an_selectat, nr_fig):
         pulls = [0.08 if show_lines and v < values.sum() * 0.07 else 0 for v in values]
         fig = px.pie(
             df_judet,
-            names='Activitate scurtă',
+            names='Activitate',
             values=an_selectat,
             title=f"{judet}",
             width=800, height=600,
@@ -374,7 +374,7 @@ def pie_charts_salariati_judete(df, ani, an_selectat, nr_fig):
         )
         st.plotly_chart(fig, use_container_width=True)
         st.markdown(f"#### Tabel cu datele pentru {judet} ({nr_fig})")
-        st.dataframe(df_judet.set_index('Activitate scurtă')[[an_selectat]])
+        st.dataframe(df_judet.set_index('Activitate')[[an_selectat]])
         st.divider()
 
     st.markdown("### Legenda activități economice")
@@ -465,10 +465,10 @@ Rata\_somaj = \beta_0 + \beta_1 \cdot Absolventi\_totali^{(standardizat)} + \bet
         <div style="background-color:#223b54;padding:18px;border-radius:8px;color:white;">
         <b>Explicații pentru termeni:</b>
         <ul>
-        <li><b>Rata_somaj</b> – variabila dependentă (ce dorim să prezicem, rata șomajului pentru fiecare județ sau România)</li>
-        <li><b>Absolventi_totali (standardizat)</b> – numărul total de absolvenți, standardizat (media 0, deviație standard 1)</li>
-        <li><b>Populatie_activa (standardizat)</b> – populația activă, standardizată</li>
-        <li><b>β₀</b> – interceptul modelului (valoarea așteptată a ratei șomajului când variabilele independente sunt 0)</li>
+        <li><b>Rata_somaj</b> – variabila dependentă</li>
+        <li><b>Absolventi_totali</b> – numărul total de absolvenți</li>
+        <li><b>Populatie_activa</b> – populația activă</li>
+        <li><b>β₀</b> – interceptul modelului</li>
         <li><b>β₁, β₂</b> – coeficienții de regresie (măsoară influența fiecărei variabile independente asupra ratei șomajului)</li>
         <li><b>ε</b> – eroarea/residuu (diferența dintre valoarea observată și cea prezisă de model)</li>
         </ul>
