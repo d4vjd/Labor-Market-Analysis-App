@@ -3,6 +3,11 @@ import pandas as pd
 import sqlite3
 import plotly.express as px
 import plotly.graph_objects as go
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 @st.cache_data
 def incarca_date(nume_tabel):
@@ -11,8 +16,8 @@ def incarca_date(nume_tabel):
     conexiune.close()
     return df
 
-def filtreaza_regiunea_centru(df):
-    judete_centru = ['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu']
+def filtreaza_regiunea_centru_si_romania(df):
+    judete_centru = ['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu', 'Romania']
     return df[df['Judete'].isin(judete_centru)]
 
 def extrage_ani(lista_ani):
@@ -148,7 +153,6 @@ def heatmap_judete_ani_interactiv(df, ani, titlu, nr_fig):
     st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
     st.dataframe(df_hm)
     st.divider()
-
 
 def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
     st.divider()
@@ -379,6 +383,153 @@ def pie_charts_salariati_judete(df, ani, an_selectat, nr_fig):
     )
     st.divider()
 
+def analiza_regresie_multipla():
+    st.header("Regresie multiplă: rata șomajului ~ absolvenți + populație activă")
+    st.info(
+        "Această analiză construiește un model de regresie multiplă pentru rata șomajului, "
+        "folosind ca variabile independente numărul total de absolvenți și populația activă, "
+        "pentru fiecare județ din regiunea Centru și pentru România."
+    )
+
+    # Incarca datele relevante
+    df_somaj = incarca_date('Somaj')
+    df_absolventi = incarca_date('Absolventi')
+    df_popactiva = incarca_date('PopActiva')
+
+    # Inlocuieste TOTAL cu Romania
+    df_somaj = replace_total_with_romania(df_somaj)
+    df_absolventi = replace_total_with_romania(df_absolventi)
+    df_popactiva = replace_total_with_romania(df_popactiva)
+
+    # Selecteaza anii comuni
+    ani_somaj = [col for col in df_somaj.columns if col.startswith('Anul')]
+    ani_absolventi = [col for col in df_absolventi.columns if col.startswith('Anul')]
+    ani_popactiva = [col for col in df_popactiva.columns if col.startswith('Anul')]
+    ani_comuni = sorted(list(set(ani_somaj) & set(ani_absolventi) & set(ani_popactiva)), key=lambda x: int(x.split()[-1]), reverse=True)
+
+    # Selecteaza sexul si anul
+    sex = st.selectbox("Alege sexul", df_somaj['Sexe'].unique())
+    an = st.selectbox("Alege anul", ani_comuni, index=0)
+
+    # Filtreaza doar judetele din regiunea Centru si Romania
+    judete_centru_romania = ['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu', 'Romania']
+
+    # Prelucreaza datele pentru fiecare sursa
+    df_somaj = df_somaj[(df_somaj['Sexe'] == sex) & (df_somaj['Judete'].isin(judete_centru_romania))]
+    df_somaj = converteste_ani_la_float(df_somaj, [an])
+    df_somaj = df_somaj[['Judete', an]].rename(columns={an: 'Rata_somaj'}).reset_index(drop=True)
+
+    df_absolventi = df_absolventi[df_absolventi['Judete'].isin(judete_centru_romania)]
+    df_absolventi = converteste_ani_la_float(df_absolventi, [an])
+    # Suma pe toate nivelurile de educatie pentru fiecare judet
+    df_absolventi_total = df_absolventi.groupby('Judete')[an].sum().reset_index().rename(columns={an: 'Absolventi_totali'})
+
+    df_popactiva = df_popactiva[(df_popactiva['Sexe'] == sex) & (df_popactiva['Judete'].isin(judete_centru_romania))]
+    df_popactiva = converteste_ani_la_float(df_popactiva, [an])
+    df_popactiva[an] = df_popactiva[an] * 1000  # conversie din mii persoane în persoane
+    df_popactiva = df_popactiva[['Judete', an]].rename(columns={an: 'Populatie_activa'})
+
+
+    # Uneste datele intr-un singur DataFrame
+    df_regresie = df_somaj.merge(df_absolventi_total, on='Judete').merge(df_popactiva, on='Judete')
+
+    st.markdown("#### Tabel cu datele folosite la regresie")
+    st.dataframe(df_regresie)
+
+    # Pregateste datele pentru regresie
+    X = df_regresie[['Absolventi_totali', 'Populatie_activa']]
+    y = df_regresie['Rata_somaj']
+
+    # Standardizeaza variabilele independente
+    from sklearn.preprocessing import StandardScaler
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Adauga constanta pentru intercept
+    X_scaled_const = sm.add_constant(X_scaled)
+
+    # Modelul de regresie
+    model = sm.OLS(y, X_scaled_const).fit()
+
+    st.markdown("#### Rezultatele modelului de regresie multiplă")
+    st.text(model.summary())
+
+    # Formula matematică centrată, în afara panoului informativ
+    st.latex(r'''
+Rata\_somaj = \beta_0 + \beta_1 \cdot Absolventi\_totali^{(standardizat)} + \beta_2 \cdot Populatie\_activa^{(standardizat)} + \varepsilon
+''')
+
+    # Panou informativ cu explicații
+    st.markdown(
+        """
+        <div style="background-color:#223b54;padding:18px;border-radius:8px;color:white;">
+        <b>Explicații pentru termeni:</b>
+        <ul>
+        <li><b>Rata_somaj</b> – variabila dependentă (ce dorim să prezicem, rata șomajului pentru fiecare județ sau România)</li>
+        <li><b>Absolventi_totali (standardizat)</b> – numărul total de absolvenți, standardizat (media 0, deviație standard 1)</li>
+        <li><b>Populatie_activa (standardizat)</b> – populația activă, standardizată</li>
+        <li><b>β₀</b> – interceptul modelului (valoarea așteptată a ratei șomajului când variabilele independente sunt 0)</li>
+        <li><b>β₁, β₂</b> – coeficienții de regresie (măsoară influența fiecărei variabile independente asupra ratei șomajului)</li>
+        <li><b>ε</b> – eroarea/residuu (diferența dintre valoarea observată și cea prezisă de model)</li>
+        </ul>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Verificare ipoteze regresie
+    st.markdown("#### Verificarea ipotezelor regresiei liniare multiple")
+
+    # 1. Normalitatea reziduurilor (Q-Q plot)
+    st.markdown("**Normalitatea reziduurilor (Q-Q plot):**")
+    fig_qq = plt.figure()
+    sm.qqplot(model.resid, line='s', ax=plt.gca())
+    plt.title('Q-Q Plot al reziduurilor')
+    st.pyplot(fig_qq)
+
+    # 2. Homoscedasticitate (plot reziduuri vs valori prezise)
+    st.markdown("**Homoscedasticitatea reziduurilor:**")
+    fig_resid = plt.figure()
+    plt.scatter(model.fittedvalues, model.resid, color='blue')
+    plt.axhline(y=0, color='red', linestyle='--')
+    plt.xlabel('Valori prezise')
+    plt.ylabel('Reziduuri')
+    plt.title('Reziduuri vs Valori prezise')
+    st.pyplot(fig_resid)
+
+    # 3. Multicoliniaritate (VIF)
+    st.markdown("**Multicoliniaritatea variabilelor independente (VIF):**")
+    vif_data = pd.DataFrame()
+    vif_data['Variabila'] = ['Absolventi_totali', 'Populatie_activa']
+    vif_data['VIF'] = [variance_inflation_factor(X_scaled, i) for i in range(X_scaled.shape[1])]
+    st.dataframe(vif_data)
+
+    # 4. Semnificativitatea modelului (p-value, R^2)
+    st.markdown("**Semnificativitatea modelului:**")
+    st.write(f"R^2: {model.rsquared:.3f}")
+    st.write(f"p-value model: {model.f_pvalue:.4f}")
+    st.write("Coeficienți și semnificație (p-value):")
+    coef_df = pd.DataFrame({
+        'Coeficient': model.params,
+        'p-value': model.pvalues
+    })
+    coef_df.index = ['Intercept', 'Absolventi_totali (standardizat)', 'Populatie_activa (standardizat)']
+    st.dataframe(coef_df)
+
+    # Explicații pentru profesori (fundal albastru)
+    st.markdown(
+        """
+        <div style="background-color:#223b54;padding:18px;border-radius:8px;color:white;">
+        <b>Explicații privind verificarea ipotezelor:</b><br>
+        <ul>
+        <li><b>Normalitatea reziduurilor</b> este verificată folosind Q-Q plot (Quantile-Quantile plot). Acest grafic compară distribuția reziduurilor modelului cu o distribuție normală teoretică. Dacă punctele se aliniază pe linia diagonală, reziduurile pot fi considerate normale.</li>
+        <li><b>Homoscedasticitatea reziduurilor</b> este verificată printr-un grafic scatter între valorile prezise de model și reziduuri. Dacă reziduurile sunt distribuite aleator în jurul axei 0, fără un pattern clar, atunci ipoteza de homoscedasticitate este îndeplinită.</li>
+        </ul>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 def main():
     st.title("Analiză a pieței muncii - Regiunea Centru")
     st.divider()
@@ -392,7 +543,8 @@ def main():
             "Salariați pe activități economice (bar chart)",
             "Structura salariaților pe activități (pie chart pe județe)",
             "Corelație rată șomaj - ocupare (scatter)",
-            "Structura absolvenți pe niveluri (stacked bar)"
+            "Structura absolvenți pe niveluri (stacked bar)",
+            "Regresie multiplă"
         )
     )
 
@@ -469,10 +621,13 @@ def main():
         nr_fig += 6
         st.header("Structura absolvenților pe niveluri de educație (stacked bar)")
         st.info("Acest stacked bar chart arată structura absolvenților pe niveluri de educație pentru județul selectat.")
-        df = filtreaza_regiunea_centru(incarca_date('Absolventi'))
+        df = filtreaza_regiunea_centru_si_romania(incarca_date('Absolventi'))
         ani = sorted([col for col in df.columns if col.startswith('Anul')], key=lambda x: int(x.split()[-1]), reverse=True)
         judet = st.selectbox("Alege județul", df['Judete'].unique())
         stacked_bar_absolventi_interactiv(df, ani, judet, nr_fig)
+
+    elif optiune == "Regresie multiplă":
+        analiza_regresie_multipla()
 
 if __name__ == "__main__":
     main()
