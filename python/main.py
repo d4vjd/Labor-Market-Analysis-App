@@ -567,7 +567,8 @@ def analiza_regresie_multipla():
     model = sm.OLS(y, X_scaled_const).fit()
 
     st.markdown("#### Rezultatele modelului de regresie multipla")
-    st.text(model.summary())
+    # Afiseaza iesirea modelului folosind font monospace pentru aliniere corecta
+    st.code(model.summary().as_text(), language="")
 
     # Afiseaza formula matematica a modelului
     st.latex(r'''
