@@ -191,26 +191,26 @@ def analiza_spatiala_choropleth():
 def choropleth_rata_somaj(geo_data, geo_type):
     # Creeaza choropleth map pentru rata somajului
     st.subheader("Rata somajului pe judete - Harta interactiva")
-    
+
     # Incarca datele de somaj
     df_somaj = incarca_date('Somaj')
     df_somaj = replace_total_with_romania(df_somaj)
-    
+
     # Selecteaza parametrii
     ani = sorted([col for col in df_somaj.columns if col.startswith('Anul')],
                  key=lambda x: int(x.split()[-1]), reverse=True)
     sex = st.selectbox("Alege sexul:", df_somaj['Sexe'].unique())
     an = st.selectbox("Alege anul:", ani, index=0)
     doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=False)
-    
+
     # Filtreaza datele
     df_filtrat = filtreaza_judete_pentru_harta(df_somaj, doar_centru)
     df_filtrat = df_filtrat[df_filtrat['Sexe'] == sex]
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
-    
+
     # Standardizeaza numele judetelor
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
-    
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -225,21 +225,22 @@ def choropleth_rata_somaj(geo_data, geo_type):
             color_continuous_scale="Reds",
             title=f"Rata somajului ({sex}) in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
-    
+
     fig.update_geos(
-        fitbounds="locations", 
+        fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"  # Background transparent
     )
     fig.update_layout(
+        width=1200,  # Am mărit lățimea hărții
+        height=800,  # Am mărit înălțimea hărții
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Rata somaj (%)"),
         paper_bgcolor="rgba(0,0,0,0)",  # Background transparent pentru paper
         plot_bgcolor="rgba(0,0,0,0)"    # Background transparent pentru plot
     )
-    
+
     st.plotly_chart(fig, use_container_width=True)
-    
     # Afiseaza tabelul cu datele
     st.markdown("#### Datele afisate pe harta")
     st.dataframe(df_filtrat[['Judete', an]].set_index('Judete'))
@@ -247,22 +248,22 @@ def choropleth_rata_somaj(geo_data, geo_type):
 def choropleth_rata_ocupare(geo_data, geo_type):
     # Creeaza choropleth map pentru rata de ocupare
     st.subheader("Rata de ocupare a resurselor de munca - Harta interactiva")
-    
+
     # Incarca datele de ocupare
     df_resurse = incarca_date('Resurse')
     df_resurse = replace_total_with_romania(df_resurse)
-    
+
     # Selecteaza parametrii
     ani = sorted([col for col in df_resurse.columns if col.startswith('Anul')],
                  key=lambda x: int(x.split()[-1]), reverse=True)
     an = st.selectbox("Alege anul:", ani, index=0)
     doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=False)
-    
+
     # Filtreaza datele
     df_filtrat = filtreaza_judete_pentru_harta(df_resurse, doar_centru)
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
-    
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -277,45 +278,46 @@ def choropleth_rata_ocupare(geo_data, geo_type):
             color_continuous_scale="Blues",
             title=f"Rata de ocupare a resurselor de munca in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
-    
+
     fig.update_geos(
-        fitbounds="locations", 
+        fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
+        width=1200,  # Mărim lățimea hărții
+        height=800,  # Mărim înălțimea hărții
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Rata ocupare (%)"),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)"
     )
-    
+
     st.plotly_chart(fig, use_container_width=True)
-    
     st.markdown("#### Datele afisate pe harta")
     st.dataframe(df_filtrat[['Judete', an]].set_index('Judete'))
 
 def choropleth_populatie_activa(geo_data, geo_type):
     # Creeaza choropleth map pentru populatia activa
     st.subheader("Populatia activa - Harta interactiva")
-    
+
     # Incarca datele de populatie activa
     df_popactiva = incarca_date('PopActiva')
     df_popactiva = replace_total_with_romania(df_popactiva)
-    
+
     # Selecteaza parametrii
     ani = sorted([col for col in df_popactiva.columns if col.startswith('Anul')],
                  key=lambda x: int(x.split()[-1]), reverse=True)
     sex = st.selectbox("Alege sexul:", df_popactiva['Sexe'].unique())
     an = st.selectbox("Alege anul:", ani, index=0)
     doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=False)
-    
+
     # Filtreaza datele
     df_filtrat = filtreaza_judete_pentru_harta(df_popactiva, doar_centru)
     df_filtrat = df_filtrat[df_filtrat['Sexe'] == sex]
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
-    
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -330,44 +332,45 @@ def choropleth_populatie_activa(geo_data, geo_type):
             color_continuous_scale="Greens",
             title=f"Populatia activa ({sex}) in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
-    
+
     fig.update_geos(
-        fitbounds="locations", 
+        fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
+        width=1200,  # Mărim lățimea hărții
+        height=800,  # Mărim înălțimea hărții
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Populatie activa (mii persoane)"),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)"
     )
-    
+
     st.plotly_chart(fig, use_container_width=True)
-    
     st.markdown("#### Datele afisate pe harta")
     st.dataframe(df_filtrat[['Judete', an]].set_index('Judete'))
 
 def choropleth_absolventi(geo_data, geo_type):
-    # Creeaza choropleth map pentru numarul de absolventi
+    # Creeaza choropleth map pentru numarul total de absolventi
     st.subheader("Numarul total de absolventi - Harta interactiva")
-    
+
     # Incarca datele de absolventi
     df_absolventi = incarca_date('Absolventi')
     df_absolventi = replace_total_with_romania(df_absolventi)
-    
+
     # Selecteaza parametrii
     ani = sorted([col for col in df_absolventi.columns if col.startswith('Anul')],
                  key=lambda x: int(x.split()[-1]), reverse=True)
     an = st.selectbox("Alege anul:", ani, index=0)
     doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=False)
-    
-    # Calculeaza totalul pe judete
+
+    # Filtreaza datele
     df_filtrat = filtreaza_judete_pentru_harta(df_absolventi, doar_centru)
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_total = df_filtrat.groupby('Judete')[an].sum().reset_index()
     df_total['Judete_std'] = df_total['Judete'].apply(standardizeaza_nume_judete)
-    
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -382,47 +385,48 @@ def choropleth_absolventi(geo_data, geo_type):
             color_continuous_scale="Purples",
             title=f"Numarul total de absolventi in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
-    
+
     fig.update_geos(
-        fitbounds="locations", 
+        fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
+        width=1200,  # Mărim lățimea hărții
+        height=800,  # Mărim înălțimea hărții
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Numar absolventi"),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)"
     )
-    
+
     st.plotly_chart(fig, use_container_width=True)
-    
     st.markdown("#### Datele afisate pe harta")
     st.dataframe(df_total.set_index('Judete')[[an]])
 
 def choropleth_salariati_total(geo_data, geo_type):
     # Creeaza choropleth map pentru numarul total de salariati
     st.subheader("Numarul total de salariati - Harta interactiva")
-    
+
     # Incarca datele de salariati
     df_salariati = incarca_date('Salariati2')
     df_salariati = replace_total_with_romania(df_salariati)
-    
+
     # Selecteaza parametrii
     ani = sorted([col for col in df_salariati.columns if col.startswith('Anul')],
                  key=lambda x: int(x.split()[-1]), reverse=True)
     an = st.selectbox("Alege anul:", ani, index=0)
     doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=False)
-    
+
     # Calculeaza totalul pe judete
     df_filtrat = filtreaza_judete_pentru_harta(df_salariati, doar_centru)
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_total = df_filtrat.groupby('Judete')[an].sum().reset_index()
     df_total['Judete_std'] = df_total['Judete'].apply(standardizeaza_nume_judete)
-    
+
     # Converteste la mii pentru afisare
     df_total[f'{an}_mii'] = df_total[an] / 1000
-    
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -437,21 +441,22 @@ def choropleth_salariati_total(geo_data, geo_type):
             color_continuous_scale="Burg",
             title=f"Numarul total de salariati in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
-    
+
     fig.update_geos(
-        fitbounds="locations", 
+        fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
+        width=1200,  # Mărim lățimea hărții
+        height=800,  # Mărim înălțimea hărții
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Numar salariati (mii)"),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)"
     )
-    
+
     st.plotly_chart(fig, use_container_width=True)
-    
     st.markdown("#### Datele afisate pe harta")
     df_display = df_total[['Judete', an]].set_index('Judete')
     st.dataframe(df_display)
@@ -459,28 +464,28 @@ def choropleth_salariati_total(geo_data, geo_type):
 def choropleth_salariati_activitati(geo_data, geo_type):
     # Creeaza choropleth map pentru salariati pe activitati economice
     st.subheader("Numarul de salariati pe activitati economice - Harta interactiva")
-    
+
     # Incarca datele de salariati
     df_salariati = incarca_date('Salariati2')
     df_salariati = replace_total_with_romania(df_salariati)
-    
+
     # Selecteaza parametrii
     ani = sorted([col for col in df_salariati.columns if col.startswith('Anul')],
                  key=lambda x: int(x.split()[-1]), reverse=True)
     an = st.selectbox("Alege anul:", ani, index=0)
     doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=False)
-    
+
     activitati = df_salariati['Activitati ale economiei'].unique()
     activitati_prescurtate = [prescurteaza_activitate(a) for a in activitati]
     activitate = st.selectbox("Alege activitatea economica:", activitati_prescurtate)
     activitate_originala = [a for a in activitati if prescurteaza_activitate(a) == activitate][0]
-    
+
     # Filtreaza datele
     df_filtrat = filtreaza_judete_pentru_harta(df_salariati, doar_centru)
     df_filtrat = df_filtrat[df_filtrat['Activitati ale economiei'] == activitate_originala]
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
-    
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -495,21 +500,22 @@ def choropleth_salariati_activitati(geo_data, geo_type):
             color_continuous_scale="Oranges",
             title=f"Salariati in {activitate} ({an.split()[-1]}) - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
-    
+
     fig.update_geos(
-        fitbounds="locations", 
+        fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
+        width=1200,  # Mărim lățimea hărții
+        height=800,  # Mărim înălțimea hărții
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Numar salariati"),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)"
     )
-    
+
     st.plotly_chart(fig, use_container_width=True)
-    
     st.markdown("#### Datele afisate pe harta")
     st.dataframe(df_filtrat[['Judete', an]].set_index('Judete'))
 
@@ -1077,9 +1083,11 @@ def main():
     st.title("Analiza a pietei muncii - Regiunea Centru")
     st.divider()
     st.sidebar.title("Meniu analize")
-    # Meniul de optiuni din sidebar
+    # Meniul de optiuni din sidebar 
+    st.sidebar.markdown("## Meniu analize")
+    st.sidebar.markdown("---")
     optiune = st.sidebar.radio(
-        "Alege analiza:",
+        "📊 Alege analiza:",
         (
             "Evolutie rata somaj (linie)",
             "Comparatie rata somaj (heatmap)",
@@ -1090,7 +1098,8 @@ def main():
             "Structura absolventi pe niveluri (stacked bar)",
             "Analiza spatiala (choropleth maps)",
             "Regresie multipla"
-        )
+        ),
+        index=7  # Pozitie implicita pe "Analiza spatiala"
     )
 
     nr_fig = 1  # Numarul figurii - incrementat pentru fiecare analiza
