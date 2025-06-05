@@ -28,7 +28,6 @@ def converteste_ani_la_float(df, ani):
         df[an] = pd.to_numeric(df[an], errors='coerce')
     return df
 
-# Culori consistente pentru județe și România
 JUD_COLORS = {
     "Alba": "#1976D2",
     "Brasov": "#FF9800",
@@ -41,26 +40,26 @@ JUD_COLORS = {
 PALETA = [JUD_COLORS[j] for j in ["Alba", "Brasov", "Covasna", "Harghita", "Mures", "Sibiu"]]
 
 PRESCURTARI_ACTIVITATI = {
-    "C INDUSTRIA PRELUCRATOARE": "Industria prelucrătoare",
-    "G COMERT CU RIDICATA SI CU AMANUNTUL; REPARAREA AUTOVEHICULELOR SI MOTOCICLETELOR": "Comerț și reparații auto",
-    "Q SANATATE SI ASISTENTA SOCIALA": "Sănătate și asistență socială",
-    "P INVATAMANT": "Învățământ",
-    "F CONSTRUCTII": "Construcții",
-    "H TRANSPORT SI DEPOZITARE": "Transport și depozitare",
-    "O ADMINISTRATIE PUBLICA SI APARARE; ASIGURARI SOCIALE DIN SISTEMUL PUBLIC": "Administrație publică și apărare",
-    "A AGRICULTURA, SILVICULTURA SI PESCUIT": "Agricultură și silvicultură",
-    "I HOTELURI SI RESTAURANTE": "Hoteluri și restaurante",
-    "E DISTRIBUTIA APEI; SALUBRITATE, GESTIONAREA DESEURILOR, ACTIVITATI DE DECONTAMINARE": "Distribuția apei și salubritate",
-    "M ACTIVITATI PROFESIONALE, STIINTIFICE SI TEHNICE": "Activități profesionale și tehnice",
-    "N ACTIVITATI DE SERVICII ADMINISTRATIVE SI ACTIVITATI DE SERVICII SUPORT": "Servicii administrative și suport",
-    "K INTERMEDIERI FINANCIARE SI ASIGURARI": "Finanțe și asigurări",
-    "B INDUSTRIA EXTRACTIVA": "Industria extractivă",
-    "D PRODUCTIA SI FURNIZAREA DE ENERGIE ELECTRICA SI TERMICA, GAZE, APA CALDA SI AER COND": "Energie și utilități",
-    "J INFORMATII SI COMUNICATII": "IT și comunicații",
-    "L TRANZACTII IMOBILIARE": "Tranzacții imobiliare",
-    "R ACTIVITATI DE SPECTACOLE, CULTURALE SI RECREATIVE": "Spectacole și recreere",
+    "C INDUSTRIA PRELUCRATOARE": "Industria prelucratoare",
+    "G COMERT CU RIDICATA SI CU AMANUNTUL; REPARAREA AUTOVEHICULELOR SI MOTOCICLETELOR": "Comert si reparatii auto",
+    "Q SANATATE SI ASISTENTA SOCIALA": "Sanatate si asistenta sociala",
+    "P INVATAMANT": "Invatamant",
+    "F CONSTRUCTII": "Constructii",
+    "H TRANSPORT SI DEPOZITARE": "Transport si depozitare",
+    "O ADMINISTRATIE PUBLICA SI APARARE; ASIGURARI SOCIALE DIN SISTEMUL PUBLIC": "Administratie publica si aparare",
+    "A AGRICULTURA, SILVICULTURA SI PESCUIT": "Agricultura si silvicultura",
+    "I HOTELURI SI RESTAURANTE": "Hoteluri si restaurante",
+    "E DISTRIBUTIA APEI; SALUBRITATE, GESTIONAREA DESEURILOR, ACTIVITATI DE DECONTAMINARE": "Distributia apei si salubritate",
+    "M ACTIVITATI PROFESIONALE, STIINTIFICE SI TEHNICE": "Activitati profesionale si tehnice",
+    "N ACTIVITATI DE SERVICII ADMINISTRATIVE SI ACTIVITATI DE SERVICII SUPORT": "Servicii administrative si suport",
+    "K INTERMEDIERI FINANCIARE SI ASIGURARI": "Finante si asigurari",
+    "B INDUSTRIA EXTRACTIVA": "Industria extractiva",
+    "D PRODUCTIA SI FURNIZAREA DE ENERGIE ELECTRICA SI TERMICA, GAZE, APA CALDA SI AER COND": "Energie si utilitati",
+    "J INFORMATII SI COMUNICATII": "IT si comunicatii",
+    "L TRANZACTII IMOBILIARE": "Tranzactii imobiliare",
+    "R ACTIVITATI DE SPECTACOLE, CULTURALE SI RECREATIVE": "Spectacole si recreere",
     "S ALTE ACTIVITATI DE SERVICII": "Alte servicii",
-    "U ACTIVITATI ALE ORGANIZATIILOR SI ORGANISMELOR EXTRATERESTRE": "Organizații internaționale",
+    "U ACTIVITATI ALE ORGANIZATIILOR SI ORGANISMELOR EXTRATERESTRE": "Organizatii internationale",
 }
 
 def prescurteaza_activitate(activitate):
@@ -160,23 +159,46 @@ def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
     df = replace_total_with_romania(df)
     df = converteste_ani_la_float(df, ani)
     df_judet = df[df['Judete'] == judet_selectat]
+
+    # Obține ordinea nivelurilor de educație așa cum apar în tabel
+    niveluri = df_judet['Niveluri de educatie'].tolist()
+
+    # Construiește DataFrame-ul pentru stacked bar, reindexat după ordinea din tabel și fill NaN cu 0
+    df_temp = df_judet.set_index('Niveluri de educatie')[ani]
+    df_temp = df_temp.reindex(niveluri)
+    df_temp = df_temp.fillna(0)
+    df_stacked = df_temp.T.reset_index().rename(columns={'index': 'An'})
+    df_stacked['An'] = ani_num
+
+    # Paleta distinctă pentru niveluri de educație (maxim 10 categorii, poate extinde)
+    PALETA_EDUCATIE = [
+        "#1976D2",  # albastru
+        "#FF9800",  # portocaliu
+        "#43A047",  # verde
+        "#8E24AA",  # mov
+        "#E53935",  # roșu
+        "#00ACC1",  # turcoaz
+        "#FDD835",  # galben
+        "#F06292",  # roz
+    ]
+
     fig = go.Figure()
     legend_labels = []
-    df_stacked = df_judet.set_index('Niveluri de educatie')[ani].T
-    df_stacked = df_stacked.reset_index().rename(columns={'index': 'An'})
-    df_stacked['An'] = ani_num
-    for i, col in enumerate(df_stacked.columns[1:]):
+    # Iterează în ordinea nivelurilor din tabel: primul element din listă va fi bottom-ul grafice
+    for i, nivel in enumerate(niveluri):
+        color = PALETA_EDUCATIE[i % len(PALETA_EDUCATIE)]
         fig.add_trace(go.Bar(
             x=df_stacked['An'],
-            y=df_stacked[col],
-            name=col,
-            text=df_stacked[col],
+            y=df_stacked[nivel],
+            name=nivel,
+            text=df_stacked[nivel],
             textfont=dict(size=12),
-            marker_color=PALETA[i % len(PALETA)],
+            marker_color=color,
             marker_line=dict(width=1.5, color="#222"),
-            hovertemplate=f"{col}: "+"%{{y}}"
+            hovertemplate=f"{nivel}: %{{y}}"
         ))
-        legend_labels.append((PALETA[i % len(PALETA)], col))
+        legend_labels.append((color, nivel))
+
     fig.update_layout(
         width=1600, height=600,
         font=dict(family="Segoe UI, Arial", size=12),
@@ -187,12 +209,15 @@ def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
         showlegend=False
     )
     st.plotly_chart(fig, use_container_width=True)
+
+    # Afișează legenda cu ordine și culori
     st.markdown("#### Legendă nivel educație")
     legend_html = "<div style='display:flex; flex-wrap:wrap; gap:20px;'>"
     for color, label in legend_labels:
         legend_html += f"<div style='display:flex; align-items:center; margin-bottom:6px;'><div style='width:18px; height:18px; background:{color}; border:2px solid #222; margin-right:8px;'></div><span style='font-size:15px'>{label}</span></div>"
     legend_html += "</div>"
     st.markdown(legend_html, unsafe_allow_html=True)
+
     st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
     st.dataframe(df_judet.set_index('Niveluri de educatie')[ani])
     st.divider()
@@ -339,43 +364,85 @@ def pie_charts_salariati_judete(df, ani, an_selectat, nr_fig):
     judete = ["Alba", "Brasov", "Covasna", "Harghita", "Mures", "Sibiu"]
     st.subheader(f"Figura {nr_fig}. Structura salariaților pe activități economice în anul {an_num}")
 
-    show_lines = st.checkbox("Afișează liniile pentru porțiunile mici din pie chart", value=False)
+    # Buton pentru afișarea detaliilor ale altor industrii (categorii sub 5%)
+    show_detail_alte = st.checkbox("Afișează detaliu pentru Alte Industrii (categorii < 5%)", value=False)
 
+    # Creează coloana cu activitatea prescurtată
     df['Activitate'] = df['Activitati ale economiei'].apply(prescurteaza_activitate)
 
     for judet in judete:
         df_judet = df[df['Judete'] == judet]
-        values = df_judet[an_selectat]
-        pulls = [0.08 if show_lines and v < values.sum() * 0.07 else 0 for v in values]
-        fig = px.pie(
-            df_judet,
-            names='Activitate',
-            values=an_selectat,
-            title=f"{judet}",
-            width=800, height=600,
-            color_discrete_sequence=PALETA,
-            hole=0.3
-        )
-        fig.update_traces(
-            textinfo='percent+label',
-            textfont=dict(size=14, family="Segoe UI", color="white"),
-            insidetextfont=dict(size=14, family="Segoe UI", color="white"),
-            pull=pulls,
-            showlegend=True,
-            marker_line=dict(width=2, color='white')
-        )
-        if not show_lines:
-            fig.update_traces(textposition='inside')
+        total_judet = df_judet[an_selectat].sum()
+        # Identifică categorii mici sub 5%
+        df_other = df_judet[df_judet[an_selectat] < total_judet * 0.05]
+        # Categorii principale (>=5%)
+        df_main = df_judet[df_judet[an_selectat] >= total_judet * 0.05].copy()
+        valoare_other = df_other[an_selectat].sum()
+        # Adaugă categoria "Alte industrii" în df_main
+        if valoare_other > 0:
+            df_main = pd.concat([
+                df_main,
+                pd.DataFrame([{'Activitate': 'Alte industrii', an_selectat: valoare_other}])
+            ], ignore_index=True)
+
+        if not show_detail_alte:
+            # Afișează grafic principal cu "Alte industrii" grupate
+            fig = px.pie(
+                df_main,
+                names='Activitate',
+                values=an_selectat,
+                title=f"{judet}",
+                width=800, height=600,
+                color_discrete_sequence=PALETA,
+                hole=0.3
+            )
+            fig.update_traces(
+                textinfo='percent+label',
+                textposition='inside',
+                textfont=dict(size=14, family="Segoe UI", color="white"),
+                insidetextfont=dict(size=14, family="Segoe UI", color="white"),
+                showlegend=True,
+                marker_line=dict(width=2, color='white')
+            )
+            fig.update_layout(
+                title=dict(font=dict(size=20)),
+                legend=dict(font=dict(size=12))
+            )
+            st.plotly_chart(fig, use_container_width=True)
+            st.markdown(f"#### Tabel cu datele pentru {judet} ({nr_fig}) - Categorii grupate")
+            st.dataframe(df_main.set_index('Activitate')[[an_selectat]])
+            st.divider()
         else:
-            fig.update_traces(textposition='auto')
-        fig.update_layout(
-            title=dict(font=dict(size=20)),
-            legend=dict(font=dict(size=12))
-        )
-        st.plotly_chart(fig, use_container_width=True)
-        st.markdown(f"#### Tabel cu datele pentru {judet} ({nr_fig})")
-        st.dataframe(df_judet.set_index('Activitate')[[an_selectat]])
-        st.divider()
+            # Afișează grafic detaliat pentru categoriile sub 5%
+            if df_other.empty:
+                st.write(f"Pentru județul {judet}, nu există categorii sub 5%.")
+                st.divider()
+            else:
+                fig_other = px.pie(
+                    df_other,
+                    names='Activitate',
+                    values=an_selectat,
+                    title=f"{judet} - Alte industrii detaliat",
+                    width=800, height=600,
+                    color_discrete_sequence=PALETA,
+                    hole=0.3
+                )
+                fig_other.update_traces(
+                    textinfo='percent+label',
+                    textposition='inside',
+                    textfont=dict(size=14, family="Segoe UI", color="white"),
+                    insidetextfont=dict(size=14, family="Segoe UI", color="white"),
+                    showlegend=True,
+                    marker_line=dict(width=2, color='white')
+                )
+                fig_other.update_layout(
+                    title=dict(font=dict(size=20)),
+                    legend=dict(font=dict(size=12))
+                )
+                st.plotly_chart(fig_other, use_container_width=True)
+                st.markdown(f"#### Tabel cu datele pentru {judet} ({nr_fig}) - Alte industrii detaliat")
+                st.dataframe(df_other.set_index('Activitate')[[an_selectat]])
+                st.divider()
 
     st.markdown("### Legenda activități economice")
     st.markdown(
@@ -391,37 +458,37 @@ def analiza_regresie_multipla():
         "pentru fiecare județ din regiunea Centru și pentru România."
     )
 
-    # Incarca datele relevante
+    # Încarcă datele relevante
     df_somaj = incarca_date('Somaj')
     df_absolventi = incarca_date('Absolventi')
     df_popactiva = incarca_date('PopActiva')
 
-    # Inlocuieste TOTAL cu Romania
+    # Înlocuiește TOTAL cu Romania
     df_somaj = replace_total_with_romania(df_somaj)
     df_absolventi = replace_total_with_romania(df_absolventi)
     df_popactiva = replace_total_with_romania(df_popactiva)
 
-    # Selecteaza anii comuni
+    # Selectează anii comuni
     ani_somaj = [col for col in df_somaj.columns if col.startswith('Anul')]
     ani_absolventi = [col for col in df_absolventi.columns if col.startswith('Anul')]
     ani_popactiva = [col for col in df_popactiva.columns if col.startswith('Anul')]
     ani_comuni = sorted(list(set(ani_somaj) & set(ani_absolventi) & set(ani_popactiva)), key=lambda x: int(x.split()[-1]), reverse=True)
 
-    # Selecteaza sexul si anul
+    # Selectează sexul și anul
     sex = st.selectbox("Alege sexul", df_somaj['Sexe'].unique())
     an = st.selectbox("Alege anul", ani_comuni, index=0)
 
-    # Filtreaza doar judetele din regiunea Centru si Romania
+    # Filtrează doar județele din regiunea Centru și România
     judete_centru_romania = ['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu', 'Romania']
 
-    # Prelucreaza datele pentru fiecare sursa
+    # Prelucrează datele pentru fiecare sursă
     df_somaj = df_somaj[(df_somaj['Sexe'] == sex) & (df_somaj['Judete'].isin(judete_centru_romania))]
     df_somaj = converteste_ani_la_float(df_somaj, [an])
     df_somaj = df_somaj[['Judete', an]].rename(columns={an: 'Rata_somaj'}).reset_index(drop=True)
 
     df_absolventi = df_absolventi[df_absolventi['Judete'].isin(judete_centru_romania)]
     df_absolventi = converteste_ani_la_float(df_absolventi, [an])
-    # Suma pe toate nivelurile de educatie pentru fiecare judet
+    # Suma pe toate nivelurile de educație pentru fiecare județ
     df_absolventi_total = df_absolventi.groupby('Judete')[an].sum().reset_index().rename(columns={an: 'Absolventi_totali'})
 
     df_popactiva = df_popactiva[(df_popactiva['Sexe'] == sex) & (df_popactiva['Judete'].isin(judete_centru_romania))]
@@ -429,23 +496,22 @@ def analiza_regresie_multipla():
     df_popactiva[an] = df_popactiva[an] * 1000  # conversie din mii persoane în persoane
     df_popactiva = df_popactiva[['Judete', an]].rename(columns={an: 'Populatie_activa'})
 
-
-    # Uneste datele intr-un singur DataFrame
+    # Unește datele într-un singur DataFrame
     df_regresie = df_somaj.merge(df_absolventi_total, on='Judete').merge(df_popactiva, on='Judete')
 
     st.markdown("#### Tabel cu datele folosite la regresie")
     st.dataframe(df_regresie)
 
-    # Pregateste datele pentru regresie
+    # Pregătește datele pentru regresie
     X = df_regresie[['Absolventi_totali', 'Populatie_activa']]
     y = df_regresie['Rata_somaj']
 
-    # Standardizeaza variabilele independente
+    # Standardizează variabilele independente
     from sklearn.preprocessing import StandardScaler
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    # Adauga constanta pentru intercept
+    # Adaugă constantă pentru intercept
     X_scaled_const = sm.add_constant(X_scaled)
 
     # Modelul de regresie
@@ -602,8 +668,8 @@ def main():
 
     elif optiune == "Corelație rată șomaj - ocupare (scatter)":
         nr_fig += 5
-        st.header("Corelație între rata șomajului și rata de ocupare (scatter)")
-        st.info("Acest scatter plot arată relația dintre rata șomajului și rata de ocupare a forței de muncă.")
+        st.header("Corelație între rata șomajului și rata de ocupare a resurselor de muncă (scatter)")
+        st.info("Acest scatter plot arată relația dintre rata șomajului și rata de ocupare a resurselor de muncă.")
         df_somaj = incarca_date('Somaj')
         df_resurse = incarca_date('Resurse')
         ani = sorted([col for col in df_somaj.columns if col.startswith('Anul')], key=lambda x: int(x.split()[-1]), reverse=True)
