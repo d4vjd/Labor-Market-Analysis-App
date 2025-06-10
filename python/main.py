@@ -171,7 +171,10 @@ def analiza_spatiala_choropleth():
             "Populatia activa",
             "Numarul total de absolventi",
             "Numarul total de salariati",
-            "Numarul de salariati pe activitati economice"
+            "Numarul de salariati pe activitati economice",
+            "PIB regional pe locuitor",
+            "Castigul salarial mediu net",
+            "Imigranti definitivi"
         ]
     )
     
@@ -187,6 +190,170 @@ def analiza_spatiala_choropleth():
         choropleth_salariati_total(geo_data, geo_type)
     elif tip_analiza == "Numarul de salariati pe activitati economice":
         choropleth_salariati_activitati(geo_data, geo_type)
+    elif tip_analiza == "PIB regional pe locuitor":
+        choropleth_pib(geo_data, geo_type)
+    elif tip_analiza == "Castigul salarial mediu net":
+        choropleth_salariu_mediu(geo_data, geo_type)
+    elif tip_analiza == "Imigranti definitivi":
+        choropleth_imigranti(geo_data, geo_type)
+
+def choropleth_pib(geo_data, geo_type):
+    # Creeaza choropleth map pentru PIB regional pe locuitor
+    st.subheader("PIB regional pe locuitor - Harta interactiva")
+
+    # Incarca datele de PIB
+    df_pib = incarca_date('PIB')
+    df_pib = replace_total_with_romania(df_pib)
+
+    # Selecteaza parametrii
+    ani = sorted([col for col in df_pib.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    an = st.selectbox("Alege anul:", ani, index=0)
+    doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=False)
+
+    # Filtreaza datele
+    df_filtrat = filtreaza_judete_pentru_harta(df_pib, doar_centru)
+    df_filtrat = converteste_ani_la_float(df_filtrat, [an])
+    df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
+
+    # Creeaza harta cu Plotly
+    if geo_type == 'geojson':
+        fig = px.choropleth(
+            df_filtrat,
+            geojson=geo_data,
+            locations='Judete_std',
+            color=an,
+            hover_name='Judete',
+            hover_data={an: ':.0f'},
+            featureidkey="properties.name",
+            projection="mercator",
+            color_continuous_scale="PuRd",
+            title=f"PIB regional pe locuitor in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
+        )
+
+    fig.update_geos(
+        fitbounds="locations",
+        visible=False,
+        bgcolor="rgba(0,0,0,0)"
+    )
+    fig.update_layout(
+        width=1200,
+        height=800,
+        title=dict(font=dict(size=20)),
+        coloraxis_colorbar=dict(title="PIB pe locuitor (lei)"),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("#### Datele afisate pe harta")
+    st.dataframe(df_filtrat[['Judete', an]].set_index('Judete'))
+
+def choropleth_salariu_mediu(geo_data, geo_type):
+    # Creeaza choropleth map pentru castigul salarial mediu net
+    st.subheader("Castigul salarial mediu net - Harta interactiva")
+
+    # Incarca datele de salariu
+    df_salariu = incarca_date('Salariu')
+    df_salariu = replace_total_with_romania(df_salariu)
+
+    # Selecteaza parametrii
+    ani = sorted([col for col in df_salariu.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    sex = st.selectbox("Alege sexul:", df_salariu['Sexe'].unique())
+    an = st.selectbox("Alege anul:", ani, index=0)
+    doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=False)
+
+    # Filtreaza datele
+    df_filtrat = filtreaza_judete_pentru_harta(df_salariu, doar_centru)
+    df_filtrat = df_filtrat[df_filtrat['Sexe'] == sex]
+    df_filtrat = converteste_ani_la_float(df_filtrat, [an])
+    df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
+
+    # Creeaza harta cu Plotly
+    if geo_type == 'geojson':
+        fig = px.choropleth(
+            df_filtrat,
+            geojson=geo_data,
+            locations='Judete_std',
+            color=an,
+            hover_name='Judete',
+            hover_data={an: ':.0f'},
+            featureidkey="properties.name",
+            projection="mercator",
+            color_continuous_scale="amp",
+            title=f"Castigul salarial mediu net ({sex}) in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
+        )
+
+    fig.update_geos(
+        fitbounds="locations",
+        visible=False,
+        bgcolor="rgba(0,0,0,0)"
+    )
+    fig.update_layout(
+        width=1200,
+        height=800,
+        title=dict(font=dict(size=20)),
+        coloraxis_colorbar=dict(title="Salariu mediu net (lei)"),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("#### Datele afisate pe harta")
+    st.dataframe(df_filtrat[['Judete', an]].set_index('Judete'))
+
+def choropleth_imigranti(geo_data, geo_type):
+    # Creeaza choropleth map pentru imigranti definitivi
+    st.subheader("Imigranti definitivi - Harta interactiva")
+
+    # Incarca datele de imigranti
+    df_imigranti = incarca_date('Imigranti')
+    df_imigranti = replace_total_with_romania(df_imigranti)
+
+    # Selecteaza parametrii
+    ani = sorted([col for col in df_imigranti.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    an = st.selectbox("Alege anul:", ani, index=0)
+    doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=False)
+
+    # Filtreaza datele
+    df_filtrat = filtreaza_judete_pentru_harta(df_imigranti, doar_centru)
+    df_filtrat = converteste_ani_la_float(df_filtrat, [an])
+    df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
+
+    # Creeaza harta cu Plotly
+    if geo_type == 'geojson':
+        fig = px.choropleth(
+            df_filtrat,
+            geojson=geo_data,
+            locations='Judete_std',
+            color=an,
+            hover_name='Judete',
+            hover_data={an: ':.0f'},
+            featureidkey="properties.name",
+            projection="mercator",
+            color_continuous_scale="Teal",
+            title=f"Imigranti definitivi in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
+        )
+
+    fig.update_geos(
+        fitbounds="locations",
+        visible=False,
+        bgcolor="rgba(0,0,0,0)"
+    )
+    fig.update_layout(
+        width=1200,
+        height=800,
+        title=dict(font=dict(size=20)),
+        coloraxis_colorbar=dict(title="Numar imigranti"),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("#### Datele afisate pe harta")
+    st.dataframe(df_filtrat[['Judete', an]].set_index('Judete'))
 
 def choropleth_rata_somaj(geo_data, geo_type):
     # Creeaza choropleth map pentru rata somajului
@@ -518,6 +685,355 @@ def choropleth_salariati_activitati(geo_data, geo_type):
     st.plotly_chart(fig, use_container_width=True)
     st.markdown("#### Datele afisate pe harta")
     st.dataframe(df_filtrat[['Judete', an]].set_index('Judete'))
+
+def analiza_pib_evolutie():
+    # Analiza evolutiei PIB-ului regional pe locuitor
+    st.header("Evolutia PIB-ului regional pe locuitor")
+    st.info("Acest grafic arata evolutia PIB-ului regional pe locuitor in timp pentru fiecare judet din regiunea Centru. "
+            "Linia alba punctata reprezinta media nationala.")
+    
+    df = incarca_date('PIB')
+    ani = sorted([col for col in df.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    
+    df_filtrat = df[(df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu'])) |
+                    (df['Judete'].str.upper() == 'TOTAL')]
+    
+    grafic_linie_pib(df_filtrat, ani, "Evolutia PIB-ului regional pe locuitor", "PIB pe locuitor (lei)", 1)
+
+def grafic_linie_pib(df, ani, titlu, ylabel, nr_fig):
+    # Creaza grafic linie pentru evolutia PIB-ului pe judete
+    st.divider()
+    ani_num = extrage_ani(ani)
+    df = replace_total_with_romania(df)
+    df = converteste_ani_la_float(df, ani)
+    df_judete = df[df['Judete'] != 'Romania']
+    
+    fig = go.Figure()
+    for idx, row in df_judete.iterrows():
+        color = JUD_COLORS.get(row['Judete'], PALETA[idx % len(PALETA)])
+        fig.add_trace(go.Scatter(
+            x=ani_num,
+            y=[row[an] for an in ani],
+            mode='lines+markers',
+            name=row['Judete'],
+            text=[f"{row['Judete']}<br>{an}: {row[an]:.0f} lei" for an in ani],
+            hoverinfo='text+y',
+            line=dict(width=3, color=color),
+            marker=dict(size=10, line=dict(width=1.5, color="#222"), color=color)
+        ))
+    
+    # Adauga linia pentru media nationala (Romania)
+    df_total = df[df['Judete'] == 'Romania']
+    if not df_total.empty:
+        row = df_total.iloc[0]
+        fig.add_trace(go.Scatter(
+            x=ani_num,
+            y=[row[an] for an in ani],
+            mode='lines+markers',
+            name="Romania",
+            text=[f"Romania<br>{an}: {row[an]:.0f} lei" for an in ani],
+            hoverinfo='text+y',
+            line=dict(width=5, color="#FFFFFF", dash='dot'),
+            marker=dict(size=12, color="#FFFFFF", line=dict(width=2, color='black'))
+        ))
+    
+    # Configurare aspect grafic
+    fig.update_layout(
+        width=1000, height=650,
+        font=dict(family="Segoe UI, Arial", size=16),
+        title=dict(text=f"Figura {nr_fig}. {titlu}", font=dict(size=26)),
+        xaxis_title=dict(text="Anul", font=dict(size=18)),
+        yaxis_title=dict(text=ylabel, font=dict(size=18)),
+        yaxis=dict(tickfont=dict(size=14)),
+        xaxis=dict(tickfont=dict(size=14)),
+        legend_title=dict(text="Judet", font=dict(size=16)),
+        legend=dict(font=dict(size=14)),
+        hovermode="x unified"
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
+    st.dataframe(df.set_index('Judete')[ani])
+    st.divider()
+
+def analiza_statistici_descriptive():
+    # Analiza cu statistici descriptive pentru diferite indicatori
+    st.header("Statistici descriptive pentru indicatorii pietei muncii")
+    st.info("Aceasta analiza calculeaza statistici descriptive (media, mediana, dispersia, etc.) "
+            "pentru diferiti indicatori ai pietei muncii din regiunea Centru.")
+    
+    # Selecteaza tipul de indicator
+    tip_indicator = st.selectbox(
+        "Alege indicatorul pentru analiza:",
+        [
+            "Rata somajului",
+            "PIB regional pe locuitor", 
+            "Castigul salarial mediu net",
+            "Rata de ocupare a resurselor de munca",
+            "Populatia activa",
+            "Imigranti definitivi"
+        ]
+    )
+    
+    if tip_indicator == "Rata somajului":
+        calculeaza_statistici_somaj()
+    elif tip_indicator == "PIB regional pe locuitor":
+        calculeaza_statistici_pib()
+    elif tip_indicator == "Castigul salarial mediu net":
+        calculeaza_statistici_salariu()
+    elif tip_indicator == "Rata de ocupare a resurselor de munca":
+        calculeaza_statistici_ocupare()
+    elif tip_indicator == "Populatia activa":
+        calculeaza_statistici_populatie()
+    elif tip_indicator == "Imigranti definitivi":
+        calculeaza_statistici_imigranti()
+
+def calculeaza_statistici_somaj():
+    # Calculeaza statistici descriptive pentru rata somajului
+    st.subheader("Statistici descriptive - Rata somajului")
+    
+    df = incarca_date('Somaj')
+    df = replace_total_with_romania(df)
+    
+    # Selecteaza parametrii
+    sex = st.selectbox("Alege sexul:", df['Sexe'].unique())
+    ani = sorted([col for col in df.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    an = st.selectbox("Alege anul:", ani, index=0)
+    
+    # Filtreaza datele pentru regiunea Centru
+    df_centru = df[(df['Sexe'] == sex) & 
+                   (df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu']))]
+    df_centru = converteste_ani_la_float(df_centru, [an])
+    
+    # Calculeaza statisticile
+    valori = df_centru[an].dropna()
+    
+    statistici = {
+        'Media': np.mean(valori),
+        'Mediana': np.median(valori),
+        'Dispersia': np.var(valori, ddof=1),
+        'Abaterea standard': np.std(valori, ddof=1),
+        'Minimul': np.min(valori),
+        'Maximul': np.max(valori),
+        'Coeficientul de variatie (%)': (np.std(valori, ddof=1) / np.mean(valori)) * 100,
+        'Amplitudinea': np.max(valori) - np.min(valori)
+    }
+    
+    # Afiseaza rezultatele
+    st.markdown("#### Statistici descriptive calculate")
+    df_stat = pd.DataFrame(list(statistici.items()), columns=['Statistica', 'Valoare'])
+    df_stat['Valoare'] = df_stat['Valoare'].round(3)
+    st.dataframe(df_stat, use_container_width=True)
+    
+    # Afiseaza datele folosite
+    st.markdown("#### Datele folosite pentru calcul")
+    st.dataframe(df_centru[['Judete', an]].set_index('Judete'))
+
+def calculeaza_statistici_pib():
+    # Calculeaza statistici descriptive pentru PIB
+    st.subheader("Statistici descriptive - PIB regional pe locuitor")
+    
+    df = incarca_date('PIB')
+    df = replace_total_with_romania(df)
+    
+    # Selecteaza parametrii
+    ani = sorted([col for col in df.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    an = st.selectbox("Alege anul:", ani, index=0)
+    
+    # Filtreaza datele pentru regiunea Centru
+    df_centru = df[df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu'])]
+    df_centru = converteste_ani_la_float(df_centru, [an])
+    
+    # Calculeaza statisticile
+    valori = df_centru[an].dropna()
+    
+    statistici = {
+        'Media': np.mean(valori),
+        'Mediana': np.median(valori),
+        'Dispersia': np.var(valori, ddof=1),
+        'Abaterea standard': np.std(valori, ddof=1),
+        'Minimul': np.min(valori),
+        'Maximul': np.max(valori),
+        'Coeficientul de variatie (%)': (np.std(valori, ddof=1) / np.mean(valori)) * 100,
+        'Amplitudinea': np.max(valori) - np.min(valori)
+    }
+    
+    # Afiseaza rezultatele
+    st.markdown("#### Statistici descriptive calculate")
+    df_stat = pd.DataFrame(list(statistici.items()), columns=['Statistica', 'Valoare'])
+    df_stat['Valoare'] = df_stat['Valoare'].round(2)
+    st.dataframe(df_stat, use_container_width=True)
+    
+    # Afiseaza datele folosite
+    st.markdown("#### Datele folosite pentru calcul")
+    st.dataframe(df_centru[['Judete', an]].set_index('Judete'))
+
+def calculeaza_statistici_salariu():
+    # Calculeaza statistici descriptive pentru salariul mediu
+    st.subheader("Statistici descriptive - Castigul salarial mediu net")
+    
+    df = incarca_date('Salariu')
+    df = replace_total_with_romania(df)
+    
+    # Selecteaza parametrii
+    sex = st.selectbox("Alege sexul:", df['Sexe'].unique())
+    ani = sorted([col for col in df.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    an = st.selectbox("Alege anul:", ani, index=0)
+    
+    # Filtreaza datele pentru regiunea Centru
+    df_centru = df[(df['Sexe'] == sex) & 
+                   (df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu']))]
+    df_centru = converteste_ani_la_float(df_centru, [an])
+    
+    # Calculeaza statisticile
+    valori = df_centru[an].dropna()
+    
+    statistici = {
+        'Media': np.mean(valori),
+        'Mediana': np.median(valori),
+        'Dispersia': np.var(valori, ddof=1),
+        'Abaterea standard': np.std(valori, ddof=1),
+        'Minimul': np.min(valori),
+        'Maximul': np.max(valori),
+        'Coeficientul de variatie (%)': (np.std(valori, ddof=1) / np.mean(valori)) * 100,
+        'Amplitudinea': np.max(valori) - np.min(valori)
+    }
+    
+    # Afiseaza rezultatele
+    st.markdown("#### Statistici descriptive calculate")
+    df_stat = pd.DataFrame(list(statistici.items()), columns=['Statistica', 'Valoare'])
+    df_stat['Valoare'] = df_stat['Valoare'].round(2)
+    st.dataframe(df_stat, use_container_width=True)
+    
+    # Afiseaza datele folosite
+    st.markdown("#### Datele folosite pentru calcul")
+    st.dataframe(df_centru[['Judete', an]].set_index('Judete'))
+
+def calculeaza_statistici_ocupare():
+    # Calculeaza statistici descriptive pentru rata de ocupare
+    st.subheader("Statistici descriptive - Rata de ocupare a resurselor de munca")
+    
+    df = incarca_date('Resurse')
+    df = replace_total_with_romania(df)
+    
+    # Selecteaza parametrii
+    ani = sorted([col for col in df.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    an = st.selectbox("Alege anul:", ani, index=0)
+    
+    # Filtreaza datele pentru regiunea Centru
+    df_centru = df[df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu'])]
+    df_centru = converteste_ani_la_float(df_centru, [an])
+    
+    # Calculeaza statisticile
+    valori = df_centru[an].dropna()
+    
+    statistici = {
+        'Media': np.mean(valori),
+        'Mediana': np.median(valori),
+        'Dispersia': np.var(valori, ddof=1),
+        'Abaterea standard': np.std(valori, ddof=1),
+        'Minimul': np.min(valori),
+        'Maximul': np.max(valori),
+        'Coeficientul de variatie (%)': (np.std(valori, ddof=1) / np.mean(valori)) * 100,
+        'Amplitudinea': np.max(valori) - np.min(valori)
+    }
+    
+    # Afiseaza rezultatele
+    st.markdown("#### Statistici descriptive calculate")
+    df_stat = pd.DataFrame(list(statistici.items()), columns=['Statistica', 'Valoare'])
+    df_stat['Valoare'] = df_stat['Valoare'].round(3)
+    st.dataframe(df_stat, use_container_width=True)
+    
+    # Afiseaza datele folosite
+    st.markdown("#### Datele folosite pentru calcul")
+    st.dataframe(df_centru[['Judete', an]].set_index('Judete'))
+
+def calculeaza_statistici_populatie():
+    # Calculeaza statistici descriptive pentru populatia activa
+    st.subheader("Statistici descriptive - Populatia activa")
+    
+    df = incarca_date('PopActiva')
+    df = replace_total_with_romania(df)
+    
+    # Selecteaza parametrii
+    sex = st.selectbox("Alege sexul:", df['Sexe'].unique())
+    ani = sorted([col for col in df.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    an = st.selectbox("Alege anul:", ani, index=0)
+    
+    # Filtreaza datele pentru regiunea Centru
+    df_centru = df[(df['Sexe'] == sex) & 
+                   (df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu']))]
+    df_centru = converteste_ani_la_float(df_centru, [an])
+    
+    # Calculeaza statisticile
+    valori = df_centru[an].dropna()
+    
+    statistici = {
+        'Media': np.mean(valori),
+        'Mediana': np.median(valori),
+        'Dispersia': np.var(valori, ddof=1),
+        'Abaterea standard': np.std(valori, ddof=1),
+        'Minimul': np.min(valori),
+        'Maximul': np.max(valori),
+        'Coeficientul de variatie (%)': (np.std(valori, ddof=1) / np.mean(valori)) * 100,
+        'Amplitudinea': np.max(valori) - np.min(valori)
+    }
+    
+    # Afiseaza rezultatele
+    st.markdown("#### Statistici descriptive calculate")
+    df_stat = pd.DataFrame(list(statistici.items()), columns=['Statistica', 'Valoare'])
+    df_stat['Valoare'] = df_stat['Valoare'].round(3)
+    st.dataframe(df_stat, use_container_width=True)
+    
+    # Afiseaza datele folosite
+    st.markdown("#### Datele folosite pentru calcul")
+    st.dataframe(df_centru[['Judete', an]].set_index('Judete'))
+
+def calculeaza_statistici_imigranti():
+    # Calculeaza statistici descriptive pentru imigranti
+    st.subheader("Statistici descriptive - Imigranti definitivi")
+    
+    df = incarca_date('Imigranti')
+    df = replace_total_with_romania(df)
+    
+    # Selecteaza parametrii
+    ani = sorted([col for col in df.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    an = st.selectbox("Alege anul:", ani, index=0)
+    
+    # Filtreaza datele pentru regiunea Centru
+    df_centru = df[df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu'])]
+    df_centru = converteste_ani_la_float(df_centru, [an])
+    
+    # Calculeaza statisticile
+    valori = df_centru[an].dropna()
+    
+    statistici = {
+        'Media': np.mean(valori),
+        'Mediana': np.median(valori),
+        'Dispersia': np.var(valori, ddof=1),
+        'Abaterea standard': np.std(valori, ddof=1),
+        'Minimul': np.min(valori),
+        'Maximul': np.max(valori),
+        'Coeficientul de variatie (%)': (np.std(valori, ddof=1) / np.mean(valori)) * 100,
+        'Amplitudinea': np.max(valori) - np.min(valori)
+    }
+    
+    # Afiseaza rezultatele
+    st.markdown("#### Statistici descriptive calculate")
+    df_stat = pd.DataFrame(list(statistici.items()), columns=['Statistica', 'Valoare'])
+    df_stat['Valoare'] = df_stat['Valoare'].round(2)
+    st.dataframe(df_stat, use_container_width=True)
+    
+    # Afiseaza datele folosite
+    st.markdown("#### Datele folosite pentru calcul")
+    st.dataframe(df_centru[['Judete', an]].set_index('Judete'))
 
 def grafic_linie_somaj(df, ani, titlu, ylabel, nr_fig):
     # Creaza grafic linie pentru evolutia ratei somajului pe judete
@@ -1090,16 +1606,18 @@ def main():
         "📊 Alege analiza:",
         (
             "Evolutie rata somaj (linie)",
+            "Evolutie PIB (linie)",
             "Comparatie rata somaj (heatmap)",
-            "Top judete dupa rata somaj (bar chart)",
+            "Judete dupa rata somaj (bar chart)",
             "Salariati pe activitati economice (bar chart)",
-            "Structura salariatilor pe activitati (pie chart pe judete)",
+            "Salariati pe activitati economice (pie chart)",
             "Corelatie rata somaj - ocupare (scatter)",
             "Structura absolventi pe niveluri (stacked bar)",
-            "Analiza spatiala (choropleth maps)",
+            "Statistici descriptive",
+            "Analiza spatiala",
             "Regresie multipla"
         ),
-        index=7  # Pozitie implicita pe "Analiza spatiala"
+        index=1  # Pozitie implicita
     )
 
     nr_fig = 1  # Numarul figurii - incrementat pentru fiecare analiza
@@ -1117,6 +1635,9 @@ def main():
                                                 (df['Judete'].str.upper() == 'TOTAL'))]
         grafic_linie_somaj(df_filtrat, ani, "Evolutia ratei somajului", "Rata somaj (%)", nr_fig)
 
+    elif optiune == "Evolutie PIB (linie)":
+        analiza_pib_evolutie()
+
     elif optiune == "Comparatie rata somaj (heatmap)":
         nr_fig += 1
         st.header("Comparatie rata somajului pe judete si ani (heatmap)")
@@ -1130,7 +1651,7 @@ def main():
                                         (df['Judete'].str.upper() == 'TOTAL'))]
         heatmap_judete_ani_interactiv(df, ani, "Heatmap rata somajului pe judete si ani", nr_fig)
 
-    elif optiune == "Top judete dupa rata somaj (bar chart)":
+    elif optiune == "Judete dupa rata somaj (bar chart)":
         nr_fig += 2
         st.header("Top judete dupa rata somajului (bar chart)")
         st.info("Acest grafic arata comparatia ratei somajului intre judete pentru anul selectat.")
@@ -1156,7 +1677,7 @@ def main():
                 (df['Judete'].str.upper() == 'TOTAL')]
         bar_chart_salariati_activitati(df, ani, an, nr_fig)
 
-    elif optiune == "Structura salariatilor pe activitati (pie chart pe judete)":
+    elif optiune == "Salariati pe activitati economice (pie chart)":
         nr_fig += 4
         st.header("Structura salariatilor pe activitati economice (pie chart pe judete)")
         st.info("Fiecare pie chart arata structura salariatilor pe activitati economice pentru un judet.")
@@ -1199,7 +1720,10 @@ def main():
         judet = st.selectbox("Alege judetul", df['Judete'].unique())
         stacked_bar_absolventi_interactiv(df, ani, judet, nr_fig)
 
-    elif optiune == "Analiza spatiala (choropleth maps)":
+    elif optiune == "Statistici descriptive":
+        analiza_statistici_descriptive()
+
+    elif optiune == "Analiza spatiala":
         analiza_spatiala_choropleth()
 
     elif optiune == "Regresie multipla":
