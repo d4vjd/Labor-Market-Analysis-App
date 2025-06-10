@@ -9,4 +9,3 @@ scikit-learn
 streamlit_folium
 folium
 geopandas
-json
