@@ -12,6 +12,10 @@ import geopandas as gpd
 import json
 import folium
 from streamlit_folium import st_folium
+from scipy import stats
+from scipy.stats import shapiro, kstest, ttest_1samp
+import warnings
+warnings.filterwarnings('ignore')
 
 @st.cache_data
 def incarca_date(nume_tabel):
@@ -699,9 +703,9 @@ def analiza_pib_evolutie():
     df_filtrat = df[(df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu'])) |
                     (df['Judete'].str.upper() == 'TOTAL')]
     
-    grafic_linie_pib(df_filtrat, ani, "Evolutia PIB-ului regional pe locuitor", "PIB pe locuitor (lei)", 1)
+    grafic_linie_pib(df_filtrat, ani, "Evolutia PIB-ului regional pe locuitor", "PIB pe locuitor (lei)")
 
-def grafic_linie_pib(df, ani, titlu, ylabel, nr_fig):
+def grafic_linie_pib(df, ani, titlu, ylabel):
     # Creaza grafic linie pentru evolutia PIB-ului pe judete
     st.divider()
     ani_num = extrage_ani(ani)
@@ -742,7 +746,7 @@ def grafic_linie_pib(df, ani, titlu, ylabel, nr_fig):
     fig.update_layout(
         width=1000, height=650,
         font=dict(family="Segoe UI, Arial", size=16),
-        title=dict(text=f"Figura {nr_fig}. {titlu}", font=dict(size=26)),
+        title=dict(text=titlu, font=dict(size=26)),
         xaxis_title=dict(text="Anul", font=dict(size=18)),
         yaxis_title=dict(text=ylabel, font=dict(size=18)),
         yaxis=dict(tickfont=dict(size=14)),
@@ -753,7 +757,7 @@ def grafic_linie_pib(df, ani, titlu, ylabel, nr_fig):
     )
     
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
+    st.markdown("#### Tabel cu datele")
     st.dataframe(df.set_index('Judete')[ani])
     st.divider()
 
@@ -788,6 +792,62 @@ def analiza_statistici_descriptive():
         calculeaza_statistici_populatie()
     elif tip_indicator == "Imigranti definitivi":
         calculeaza_statistici_imigranti()
+
+def verifica_semnificativitatea_statistici(valori, nume_indicator):
+    """
+    Verifica semnificativitatea statisticilor descriptive
+    """
+    rezultate = {}
+    n = len(valori)
+    
+    # Test de normalitate
+    if n <= 50:
+        # Shapiro-Wilk pentru eșantioane mici
+        stat_shapiro, p_shapiro = shapiro(valori)
+        rezultate['test_normalitate'] = f"Shapiro-Wilk: statistica={stat_shapiro:.4f}, p-value={p_shapiro:.4f}"
+        rezultate['normalitate_concluzie'] = "Datele urmează distribuția normală" if p_shapiro > 0.05 else "Datele NU urmează distribuția normală"
+    else:
+        # Kolmogorov-Smirnov pentru eșantioane mari
+        stat_ks, p_ks = kstest(valori, 'norm')
+        rezultate['test_normalitate'] = f"Kolmogorov-Smirnov: statistica={stat_ks:.4f}, p-value={p_ks:.4f}"
+        rezultate['normalitate_concluzie'] = "Datele urmează distribuția normală" if p_ks > 0.05 else "Datele NU urmează distribuția normală"
+    
+    # Intervale de încredere pentru medie (95% și 99%)
+    media = np.mean(valori)
+    eroare_std = stats.sem(valori)  # Standard error of mean
+    
+    # Interval 95%
+    ic_95 = stats.t.interval(0.95, n-1, loc=media, scale=eroare_std)
+    rezultate['interval_incredere_95'] = f"IC 95% pentru medie: [{ic_95[0]:.3f}, {ic_95[1]:.3f}]"
+    
+    # Interval 99%
+    ic_99 = stats.t.interval(0.99, n-1, loc=media, scale=eroare_std)
+    rezultate['interval_incredere_99'] = f"IC 99% pentru medie: [{ic_99[0]:.3f}, {ic_99[1]:.3f}]"
+    
+    # Test t pentru media (testăm dacă media diferă semnificativ de 0)
+    t_stat, p_t = ttest_1samp(valori, 0)
+    rezultate['test_t_media'] = f"Test t pentru medie=0: t={t_stat:.4f}, p-value={p_t:.4f}"
+    rezultate['media_semnificativa'] = "Media este semnificativ diferită de 0" if p_t < 0.05 else "Media NU este semnificativ diferită de 0"
+    
+    # Detectarea valorilor extreme (outliers) - metoda IQR
+    Q1 = np.percentile(valori, 25)
+    Q3 = np.percentile(valori, 75)
+    IQR = Q3 - Q1
+    limita_inf = Q1 - 1.5 * IQR
+    limita_sup = Q3 + 1.5 * IQR
+    
+    outliers = valori[(valori < limita_inf) | (valori > limita_sup)]
+    rezultate['outliers'] = f"Valori extreme detectate: {len(outliers)} din {n} observații"
+    if len(outliers) > 0:
+        rezultate['lista_outliers'] = f"Valorile extreme sunt: {outliers.tolist()}"
+    
+    # Test pentru varianta (test Chi-patrat)
+    varianta_observata = np.var(valori, ddof=1)
+    chi2_stat = (n-1) * varianta_observata / 1
+    p_chi2 = 1 - stats.chi2.cdf(chi2_stat, n-1)
+    rezultate['test_varianta'] = f"Test Chi² pentru varianță: χ²={chi2_stat:.4f}, p-value={p_chi2:.4f}"
+    
+    return rezultate
 
 def calculeaza_statistici_somaj():
     # Calculeaza statistici descriptive pentru rata somajului
@@ -826,6 +886,35 @@ def calculeaza_statistici_somaj():
     df_stat = pd.DataFrame(list(statistici.items()), columns=['Statistica', 'Valoare'])
     df_stat['Valoare'] = df_stat['Valoare'].round(3)
     st.dataframe(df_stat, use_container_width=True)
+    
+    # Verificarea semnificativității
+    rezultate_teste = verifica_semnificativitatea_statistici(valori, "Rata somajului")
+    
+    # Secțiunea informativă cu rezultatele verificării
+    st.markdown("#### Verificarea semnificativității statisticilor")
+    st.info(f"""
+    **Rezultatele testelor statistice pentru rata somajului:**
+    
+    📊 **Test de normalitate:** {rezultate_teste['test_normalitate']}
+    ✅ **Concluzie normalitate:** {rezultate_teste['normalitate_concluzie']}
+    
+    📈 **Intervale de încredere:**
+    - {rezultate_teste['interval_incredere_95']}
+    - {rezultate_teste['interval_incredere_99']}
+    
+    🎯 **Test pentru medie:** {rezultate_teste['test_t_media']}
+    ✅ **Concluzie medie:** {rezultate_teste['media_semnificativa']}
+    
+    ⚠️ **Valori extreme:** {rezultate_teste['outliers']}
+    {rezultate_teste.get('lista_outliers', '')}
+    
+    📊 **Test pentru varianță:** {rezultate_teste['test_varianta']}
+    
+    **Interpretare:**
+    - Dacă p-value < 0.05 → rezultatul este semnificativ statistic
+    - Intervalele de încredere arată intervalul în care se află adevărata valoare a mediei cu o probabilitate de 95%/99%
+    - Valorile extreme pot influența semnificativ rezultatele statisticilor descriptive
+    """)
     
     # Afiseaza datele folosite
     st.markdown("#### Datele folosite pentru calcul")
@@ -866,6 +955,35 @@ def calculeaza_statistici_pib():
     df_stat = pd.DataFrame(list(statistici.items()), columns=['Statistica', 'Valoare'])
     df_stat['Valoare'] = df_stat['Valoare'].round(2)
     st.dataframe(df_stat, use_container_width=True)
+    
+    # Verificarea semnificativității
+    rezultate_teste = verifica_semnificativitatea_statistici(valori, "PIB regional pe locuitor")
+    
+    # Secțiunea informativă cu rezultatele verificării
+    st.markdown("#### Verificarea semnificativității statisticilor")
+    st.info(f"""
+    **Rezultatele testelor statistice pentru PIB regional pe locuitor:**
+    
+    📊 **Test de normalitate:** {rezultate_teste['test_normalitate']}
+    ✅ **Concluzie normalitate:** {rezultate_teste['normalitate_concluzie']}
+    
+    📈 **Intervale de încredere:**
+    - {rezultate_teste['interval_incredere_95']}
+    - {rezultate_teste['interval_incredere_99']}
+    
+    🎯 **Test pentru medie:** {rezultate_teste['test_t_media']}
+    ✅ **Concluzie medie:** {rezultate_teste['media_semnificativa']}
+    
+    ⚠️ **Valori extreme:** {rezultate_teste['outliers']}
+    {rezultate_teste.get('lista_outliers', '')}
+    
+    📊 **Test pentru varianță:** {rezultate_teste['test_varianta']}
+    
+    **Interpretare:**
+    - Dacă p-value < 0.05 → rezultatul este semnificativ statistic
+    - Intervalele de încredere arată intervalul în care se află adevărata valoare a mediei cu o probabilitate de 95%/99%
+    - Valorile extreme pot influența semnificativ rezultatele statisticilor descriptive
+    """)
     
     # Afiseaza datele folosite
     st.markdown("#### Datele folosite pentru calcul")
@@ -909,6 +1027,35 @@ def calculeaza_statistici_salariu():
     df_stat['Valoare'] = df_stat['Valoare'].round(2)
     st.dataframe(df_stat, use_container_width=True)
     
+    # Verificarea semnificativității
+    rezultate_teste = verifica_semnificativitatea_statistici(valori, "Castigul salarial mediu net")
+    
+    # Secțiunea informativă cu rezultatele verificării
+    st.markdown("#### Verificarea semnificativității statisticilor")
+    st.info(f"""
+    **Rezultatele testelor statistice pentru castigul salarial mediu net:**
+    
+    📊 **Test de normalitate:** {rezultate_teste['test_normalitate']}
+    ✅ **Concluzie normalitate:** {rezultate_teste['normalitate_concluzie']}
+    
+    📈 **Intervale de încredere:**
+    - {rezultate_teste['interval_incredere_95']}
+    - {rezultate_teste['interval_incredere_99']}
+    
+    🎯 **Test pentru medie:** {rezultate_teste['test_t_media']}
+    ✅ **Concluzie medie:** {rezultate_teste['media_semnificativa']}
+    
+    ⚠️ **Valori extreme:** {rezultate_teste['outliers']}
+    {rezultate_teste.get('lista_outliers', '')}
+    
+    📊 **Test pentru varianță:** {rezultate_teste['test_varianta']}
+    
+    **Interpretare:**
+    - Dacă p-value < 0.05 → rezultatul este semnificativ statistic
+    - Intervalele de încredere arată intervalul în care se află adevărata valoare a mediei cu o probabilitate de 95%/99%
+    - Valorile extreme pot influența semnificativ rezultatele statisticilor descriptive
+    """)
+    
     # Afiseaza datele folosite
     st.markdown("#### Datele folosite pentru calcul")
     st.dataframe(df_centru[['Judete', an]].set_index('Judete'))
@@ -948,6 +1095,35 @@ def calculeaza_statistici_ocupare():
     df_stat = pd.DataFrame(list(statistici.items()), columns=['Statistica', 'Valoare'])
     df_stat['Valoare'] = df_stat['Valoare'].round(3)
     st.dataframe(df_stat, use_container_width=True)
+    
+    # Verificarea semnificativității
+    rezultate_teste = verifica_semnificativitatea_statistici(valori, "Rata de ocupare a resurselor de munca")
+    
+    # Secțiunea informativă cu rezultatele verificării
+    st.markdown("#### Verificarea semnificativității statisticilor")
+    st.info(f"""
+    **Rezultatele testelor statistice pentru rata de ocupare a resurselor de munca:**
+    
+    📊 **Test de normalitate:** {rezultate_teste['test_normalitate']}
+    ✅ **Concluzie normalitate:** {rezultate_teste['normalitate_concluzie']}
+    
+    📈 **Intervale de încredere:**
+    - {rezultate_teste['interval_incredere_95']}
+    - {rezultate_teste['interval_incredere_99']}
+    
+    🎯 **Test pentru medie:** {rezultate_teste['test_t_media']}
+    ✅ **Concluzie medie:** {rezultate_teste['media_semnificativa']}
+    
+    ⚠️ **Valori extreme:** {rezultate_teste['outliers']}
+    {rezultate_teste.get('lista_outliers', '')}
+    
+    📊 **Test pentru varianță:** {rezultate_teste['test_varianta']}
+    
+    **Interpretare:**
+    - Dacă p-value < 0.05 → rezultatul este semnificativ statistic
+    - Intervalele de încredere arată intervalul în care se află adevărata valoare a mediei cu o probabilitate de 95%/99%
+    - Valorile extreme pot influența semnificativ rezultatele statisticilor descriptive
+    """)
     
     # Afiseaza datele folosite
     st.markdown("#### Datele folosite pentru calcul")
@@ -991,6 +1167,35 @@ def calculeaza_statistici_populatie():
     df_stat['Valoare'] = df_stat['Valoare'].round(3)
     st.dataframe(df_stat, use_container_width=True)
     
+    # Verificarea semnificativității
+    rezultate_teste = verifica_semnificativitatea_statistici(valori, "Populatia activa")
+    
+    # Secțiunea informativă cu rezultatele verificării
+    st.markdown("#### Verificarea semnificativității statisticilor")
+    st.info(f"""
+    **Rezultatele testelor statistice pentru populatia activa:**
+    
+    📊 **Test de normalitate:** {rezultate_teste['test_normalitate']}
+    ✅ **Concluzie normalitate:** {rezultate_teste['normalitate_concluzie']}
+    
+    📈 **Intervale de încredere:**
+    - {rezultate_teste['interval_incredere_95']}
+    - {rezultate_teste['interval_incredere_99']}
+    
+    🎯 **Test pentru medie:** {rezultate_teste['test_t_media']}
+    ✅ **Concluzie medie:** {rezultate_teste['media_semnificativa']}
+    
+    ⚠️ **Valori extreme:** {rezultate_teste['outliers']}
+    {rezultate_teste.get('lista_outliers', '')}
+    
+    📊 **Test pentru varianță:** {rezultate_teste['test_varianta']}
+    
+    **Interpretare:**
+    - Dacă p-value < 0.05 → rezultatul este semnificativ statistic
+    - Intervalele de încredere arată intervalul în care se află adevărata valoare a mediei cu o probabilitate de 95%/99%
+    - Valorile extreme pot influența semnificativ rezultatele statisticilor descriptive
+    """)
+    
     # Afiseaza datele folosite
     st.markdown("#### Datele folosite pentru calcul")
     st.dataframe(df_centru[['Judete', an]].set_index('Judete'))
@@ -1031,11 +1236,40 @@ def calculeaza_statistici_imigranti():
     df_stat['Valoare'] = df_stat['Valoare'].round(2)
     st.dataframe(df_stat, use_container_width=True)
     
+    # Verificarea semnificativității
+    rezultate_teste = verifica_semnificativitatea_statistici(valori, "Imigranti definitivi")
+    
+    # Secțiunea informativă cu rezultatele verificării
+    st.markdown("#### Verificarea semnificativității statisticilor")
+    st.info(f"""
+    **Rezultatele testelor statistice pentru imigranti definitivi:**
+    
+    📊 **Test de normalitate:** {rezultate_teste['test_normalitate']}
+    ✅ **Concluzie normalitate:** {rezultate_teste['normalitate_concluzie']}
+    
+    📈 **Intervale de încredere:**
+    - {rezultate_teste['interval_incredere_95']}
+    - {rezultate_teste['interval_incredere_99']}
+    
+    🎯 **Test pentru medie:** {rezultate_teste['test_t_media']}
+    ✅ **Concluzie medie:** {rezultate_teste['media_semnificativa']}
+    
+    ⚠️ **Valori extreme:** {rezultate_teste['outliers']}
+    {rezultate_teste.get('lista_outliers', '')}
+    
+    📊 **Test pentru varianță:** {rezultate_teste['test_varianta']}
+    
+    **Interpretare:**
+    - Dacă p-value < 0.05 → rezultatul este semnificativ statistic
+    - Intervalele de încredere arată intervalul în care se află adevărata valoare a mediei cu o probabilitate de 95%/99%
+    - Valorile extreme pot influența semnificativ rezultatele statisticilor descriptive
+    """)
+    
     # Afiseaza datele folosite
     st.markdown("#### Datele folosite pentru calcul")
     st.dataframe(df_centru[['Judete', an]].set_index('Judete'))
 
-def grafic_linie_somaj(df, ani, titlu, ylabel, nr_fig):
+def grafic_linie_somaj(df, ani, titlu, ylabel):
     # Creaza grafic linie pentru evolutia ratei somajului pe judete
     st.divider()
     ani_num = extrage_ani(ani)
@@ -1073,7 +1307,7 @@ def grafic_linie_somaj(df, ani, titlu, ylabel, nr_fig):
     fig.update_layout(
         width=1000, height=650,
         font=dict(family="Segoe UI, Arial", size=16),
-        title=dict(text=f"Figura {nr_fig}. {titlu}", font=dict(size=26)),
+        title=dict(text=titlu, font=dict(size=26)),
         xaxis_title=dict(text="Anul", font=dict(size=18)),
         yaxis_title=dict(text=ylabel, font=dict(size=18)),
         yaxis=dict(tickfont=dict(size=14)),
@@ -1083,11 +1317,11 @@ def grafic_linie_somaj(df, ani, titlu, ylabel, nr_fig):
         hovermode="x unified"
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
+    st.markdown("#### Tabel cu datele")
     st.dataframe(df.set_index('Judete')[ani])
     st.divider()
 
-def heatmap_judete_ani_interactiv(df, ani, titlu, nr_fig):
+def heatmap_judete_ani_interactiv(df, ani, titlu):
     # Creaza heatmap pentru comparatie rata somaj pe judete si ani
     st.divider()
     ani_num = extrage_ani(ani)
@@ -1103,7 +1337,7 @@ def heatmap_judete_ani_interactiv(df, ani, titlu, nr_fig):
         aspect=0.08,
         color_continuous_scale="Blues",
         labels=dict(color="Rata somaj (%)"),
-        title=f"Figura {nr_fig}. {titlu}"
+        title=titlu
     )
     fig.update_xaxes(
         side="bottom",
@@ -1124,11 +1358,11 @@ def heatmap_judete_ani_interactiv(df, ani, titlu, nr_fig):
         coloraxis_colorbar=dict(title_font=dict(size=16), tickfont=dict(size=12))
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
+    st.markdown("#### Tabel cu datele")
     st.dataframe(df_hm)
     st.divider()
 
-def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
+def stacked_bar_absolventi_interactiv(df, ani, judet_selectat):
     # Creaza stacked bar pentru structura absolventilor pe niveluri de educatie
     st.divider()
     ani_num = extrage_ani(ani)
@@ -1181,7 +1415,7 @@ def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
         width=1600, height=600,
         font=dict(family="Segoe UI, Arial", size=12),
         barmode='stack',
-        title=dict(text=f"Figura {nr_fig}. Structura absolventilor pe niveluri de educatie ({judet_selectat})", font=dict(size=28)),
+        title=dict(text=f"Structura absolventilor pe niveluri de educatie ({judet_selectat})", font=dict(size=28)),
         xaxis=dict(title=dict(text="Anul", font=dict(size=16)), tickangle=0, tickfont=dict(size=12)),
         yaxis=dict(title=dict(text="Numar absolventi", font=dict(size=16)), tickfont=dict(size=12)),
         showlegend=False
@@ -1200,11 +1434,11 @@ def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
     legend_html += "</div>"
     st.markdown(legend_html, unsafe_allow_html=True)
 
-    st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
+    st.markdown("#### Tabel cu datele")
     st.dataframe(df_judet.set_index('Niveluri de educatie')[ani])
     st.divider()
 
-def bar_chart_an_interactiv(df, an, titlu, ylabel, nr_fig):
+def bar_chart_an_interactiv(df, an, titlu, ylabel):
     # Creaza bar chart pentru comparatia rata somaj in anul selectat
     st.divider()
     an_num = an.split()[-1]
@@ -1244,15 +1478,15 @@ def bar_chart_an_interactiv(df, an, titlu, ylabel, nr_fig):
         font=dict(family="Segoe UI, Arial", size=16),
         yaxis=dict(title=dict(text=ylabel, font=dict(size=18)), tickfont=dict(size=14)),
         xaxis=dict(title=dict(text="Judet", font=dict(size=18)), tickangle=30, tickfont=dict(size=14)),
-        title=dict(text=f"Figura {nr_fig}. {titlu}", font=dict(size=26)),
+        title=dict(text=titlu, font=dict(size=26)),
         legend=dict(font=dict(size=14))
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
+    st.markdown("#### Tabel cu datele")
     st.dataframe(df.set_index('Judete')[[an]])
     st.divider()
 
-def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel, nr_fig):
+def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
     # Creaza scatter plot pentru corelatia intre rata somaj si rata de ocupare
     st.divider()
     an_num = an.split()[-1]
@@ -1287,15 +1521,15 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel, nr_fig):
         font=dict(family="Segoe UI, Arial", size=16),
         xaxis=dict(title=dict(text=xlabel, font=dict(size=18)), tickfont=dict(size=14)),
         yaxis=dict(title=dict(text=ylabel, font=dict(size=18)), tickfont=dict(size=14)),
-        title=dict(text=f"Figura {nr_fig}. {titlu}", font=dict(size=26)),
+        title=dict(text=titlu, font=dict(size=26)),
         legend=dict(font=dict(size=14))
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
+    st.markdown("#### Tabel cu datele")
     st.dataframe(df_corel.set_index('Judet'))
     st.divider()
 
-def bar_chart_salariati_activitati(df, ani, an_selectat, nr_fig):
+def bar_chart_salariati_activitati(df, ani, an_selectat):
     # Creaza bar chart pentru numarul salariatilor pe activitati economice in anul selectat
     st.divider()
     an_num = an_selectat.split()[-1]
@@ -1331,25 +1565,25 @@ def bar_chart_salariati_activitati(df, ani, an_selectat, nr_fig):
         font=dict(family="Segoe UI, Arial", size=16),
         yaxis=dict(title=dict(text="Numar salariati", font=dict(size=18)), tickfont=dict(size=14)),
         xaxis=dict(title=dict(text="Judet", font=dict(size=18)), tickangle=30, tickfont=dict(size=14)),
-        title=dict(text=f"Figura {nr_fig}. Numar salariati in {an_num} pentru activitatea: {activitate}", font=dict(size=26)),
+        title=dict(text=f"Numar salariati in {an_num} pentru activitatea: {activitate}", font=dict(size=26)),
         legend=dict(font=dict(size=14))
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown(f"#### Tabel cu datele pentru figura {nr_fig}")
+    st.markdown("#### Tabel cu datele")
     if not show_romania:
         st.dataframe(df_activ[df_activ['Judete'] != "Romania"].set_index('Judete')[[an_selectat]])
     else:
         st.dataframe(df_activ.set_index('Judete')[[an_selectat]])
     st.divider()
 
-def pie_charts_salariati_judete(df, ani, an_selectat, nr_fig):
+def pie_charts_salariati_judete(df, ani, an_selectat):
     # Creaza pie chart-uri pentru structura salariatilor pe activitati economice in fiecare judet
     st.divider()
     an_num = an_selectat.split()[-1]
     df = replace_total_with_romania(df)
     df = converteste_ani_la_float(df, [an_selectat])
     judete = ["Alba", "Brasov", "Covasna", "Harghita", "Mures", "Sibiu"]
-    st.subheader(f"Figura {nr_fig}. Structura salariatilor pe activitati economice in anul {an_num}")
+    st.subheader(f"Structura salariatilor pe activitati economice in anul {an_num}")
 
     # Checkbox pentru a afisa detaliile pentru categoriile sub 5%
     show_detail_alte = st.checkbox("Afiseaza detaliu pentru Alte Industrii (categorii < 5%)", value=False)
@@ -1396,7 +1630,7 @@ def pie_charts_salariati_judete(df, ani, an_selectat, nr_fig):
                 legend=dict(font=dict(size=12))
             )
             st.plotly_chart(fig, use_container_width=True)
-            st.markdown(f"#### Tabel cu datele pentru {judet} ({nr_fig}) - Categorii grupate")
+            st.markdown(f"#### Tabel cu datele pentru {judet} - Categorii grupate")
             st.dataframe(df_main.set_index('Activitate')[[an_selectat]])
             st.divider()
         else:
@@ -1427,7 +1661,7 @@ def pie_charts_salariati_judete(df, ani, an_selectat, nr_fig):
                     legend=dict(font=dict(size=12))
                 )
                 st.plotly_chart(fig_other, use_container_width=True)
-                st.markdown(f"#### Tabel cu datele pentru {judet} ({nr_fig}) - Alte industrii detaliat")
+                st.markdown(f"#### Tabel cu datele pentru {judet} - Alte industrii detaliat")
                 st.dataframe(df_other.set_index('Activitate')[[an_selectat]])
                 st.divider()
 
@@ -1437,6 +1671,442 @@ def pie_charts_salariati_judete(df, ani, an_selectat, nr_fig):
         "\n".join([f"- **{prescurtare}**: {activitate}" for activitate, prescurtare in PRESCURTARI_ACTIVITATI.items()])
     )
     st.divider()
+
+def pie_chart_public_privat(df_analiza, an, doar_centru):
+    # Creeaza pie chart pentru distributia publica vs privata
+    st.subheader("Distributia generala publica vs privata")
+    
+    # Calculeaza totalurile generale
+    total_salariati_publici = df_analiza['Salariati_publici'].sum()
+    total_salariati_general = df_analiza['Total_salariati'].sum()
+    total_salariati_privati = total_salariati_general - total_salariati_publici
+    
+    procent_public_general = (total_salariati_publici / total_salariati_general) * 100
+    procent_privat_general = (total_salariati_privati / total_salariati_general) * 100
+    
+    # Creaza DataFrame pentru pie chart
+    df_pie = pd.DataFrame({
+        'Sector': ['Public', 'Privat'],
+        'Numar_salariati': [total_salariati_publici, total_salariati_privati],
+        'Procent': [procent_public_general, procent_privat_general]
+    })
+    
+    # Creaza pie chart cu Plotly
+    fig = px.pie(
+        df_pie,
+        names='Sector',
+        values='Numar_salariati',
+        title=f"Distributia salariatilor public vs privat in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}",
+        color_discrete_sequence=['#c72a2a', '#f5c3ba'],
+        width=800,
+        height=600
+    )
+    
+    fig.update_traces(
+        textinfo='label+percent+value',
+        textfont=dict(size=16),
+        marker_line=dict(width=2, color='white'),
+        hovertemplate='<b>%{label}</b><br>' +
+                     'Numar salariati: %{value:,.0f}<br>' +
+                     'Procent: %{percent}<br>' +
+                     '<extra></extra>'
+    )
+    
+    fig.update_layout(
+        title=dict(font=dict(size=20)),
+        legend=dict(font=dict(size=16)),
+        font=dict(family="Segoe UI, Arial", size=14)
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # Afiseaza comparatie pe judete
+    st.markdown("#### Comparatie pe judete")
+    df_comparatie = df_analiza[['Judete', 'Procent_public', 'Procent_privat']].copy()
+    df_comparatie = df_comparatie.sort_values('Procent_public', ascending=False)
+    df_comparatie['Procent_public'] = df_comparatie['Procent_public'].round(1)
+    df_comparatie['Procent_privat'] = df_comparatie['Procent_privat'].round(1)
+    df_comparatie = df_comparatie.rename(columns={
+        'Procent_public': 'Procent public (%)',
+        'Procent_privat': 'Procent privat (%)'
+    })
+    st.dataframe(df_comparatie.set_index('Judete'))
+
+def choropleth_public_privat(df_analiza, geo_data, geo_type, an, doar_centru):
+    # Creeaza choropleth map pentru procentul de salariati publici
+    st.subheader("Procentul de salariati din sectorul public - Harta interactiva")
+    
+    # Prima parte: Harta animata pentru toti anii
+    st.markdown("#### Evoluția în timp - Animație")
+    choropleth_animat_public_privat(geo_data, geo_type, doar_centru)
+    st.divider()
+    st.markdown("#### Harta detaliată pentru anul selectat")
+    
+    # Coordonatele ajustate ale centrelor judetelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    # Adauga prescurtari pentru judete
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+    
+    df_analiza['Prescurtare'] = df_analiza['Judete'].map(prescurtari_judete)
+    
+    # Creeaza harta cu Plotly
+    if geo_type == 'geojson':
+        fig = px.choropleth(
+            df_analiza,
+            geojson=geo_data,
+            locations='Judete_std',
+            color='Procent_public',
+            hover_name='Judete',
+            hover_data={
+                'Procent_public': ':.1f',
+                'Salariati_publici': ':,.0f',
+                'Total_salariati': ':,.0f'
+            },
+            featureidkey="properties.name",
+            projection="mercator",
+            color_continuous_scale="Reds",
+            range_color=[10, 25],
+            title=f"Procentul de salariati din sectorul public in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
+        )
+        
+        # Adauga textul pentru fiecare judet DOAR daca este selectata regiunea Centru
+        if doar_centru:
+            for _, row in df_analiza.iterrows():
+                if row['Judete'] in coordonate_judete and pd.notna(row['Prescurtare']):
+                    lat, lon = coordonate_judete[row['Judete']]
+                    text_afisare = f"{row['Prescurtare']}<br>{row['Procent_public']:.1f}%"
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[text_afisare],
+                        mode='text',
+                        textfont=dict(
+                            size=12,
+                            color="white",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
+
+    fig.update_geos(
+        fitbounds="locations",
+        visible=False,
+        bgcolor="rgba(0,0,0,0)"
+    )
+    fig.update_layout(
+        width=1400,
+        height=1000,
+        title=dict(font=dict(size=20)),
+        coloraxis_colorbar=dict(title="Procent salariati publici (%)"),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # Afiseaza tabelul cu datele
+    st.markdown("#### Datele afisate pe harta")
+    df_display = df_analiza[['Judete', 'Procent_public', 'Procent_privat', 'Salariati_publici', 'Total_salariati']].copy()
+    df_display['Procent_public'] = df_display['Procent_public'].round(1)
+    df_display['Procent_privat'] = df_display['Procent_privat'].round(1)
+    df_display = df_display.rename(columns={
+        'Procent_public': 'Procent public (%)',
+        'Procent_privat': 'Procent privat (%)',
+        'Salariati_publici': 'Salariati publici',
+        'Total_salariati': 'Total salariati'
+    })
+    st.dataframe(df_display.set_index('Judete'))
+
+def choropleth_animat_public_privat(geo_data, geo_type, doar_centru):
+    # Creeaza harta animata pentru evolutia in timp
+    
+    # Incarca datele de salariati
+    df_salariati = incarca_date('Salariati2')
+    df_salariati = replace_total_with_romania(df_salariati)
+    
+    # Selecteaza anii disponibili
+    ani = sorted([col for col in df_salariati.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]))
+    
+    # Defineste activitatile publice
+    activitati_publice = [
+        'O ADMINISTRATIE PUBLICA SI APARARE; ASIGURARI SOCIALE DIN SISTEMUL PUBLIC',
+        'P INVATAMANT',
+        'Q SANATATE SI ASISTENTA SOCIALA'
+    ]
+    
+    # Prepara datele pentru animatie
+    df_animatie_lista = []
+    
+    for an in ani:
+        an_num = an.split()[-1]
+        
+        # Filtreaza si pregateste datele pentru anul curent
+        df_filtrat = filtreaza_judete_pentru_harta(df_salariati, doar_centru)
+        df_filtrat = converteste_ani_la_float(df_filtrat, [an])
+        
+        # Calculeaza totalul de salariati pe judete
+        df_total = df_filtrat.groupby('Judete')[an].sum().reset_index()
+        df_total = df_total.rename(columns={an: 'Total_salariati'})
+        
+        # Calculeaza salariati din sectorul public
+        df_public = df_filtrat[df_filtrat['Activitati ale economiei'].isin(activitati_publice)]
+        df_public_total = df_public.groupby('Judete')[an].sum().reset_index()
+        df_public_total = df_public_total.rename(columns={an: 'Salariati_publici'})
+        
+        # Uneste datele si calculeaza procentul
+        df_an = df_total.merge(df_public_total, on='Judete', how='left')
+        df_an['Salariati_publici'] = df_an['Salariati_publici'].fillna(0)
+        df_an['Procent_public'] = (df_an['Salariati_publici'] / df_an['Total_salariati']) * 100
+        df_an['Judete_std'] = df_an['Judete'].apply(standardizeaza_nume_judete)
+        df_an['An'] = an_num
+        
+        df_animatie_lista.append(df_an)
+    
+    # Combina toate datele intr-un singur DataFrame
+    df_animatie = pd.concat(df_animatie_lista, ignore_index=True)
+    
+    # Creeaza harta animata
+    if geo_type == 'geojson':
+        fig_animat = px.choropleth(
+            df_animatie,
+            geojson=geo_data,
+            locations='Judete_std',
+            color='Procent_public',
+            animation_frame='An',
+            hover_name='Judete',
+            hover_data={
+                'Procent_public': ':.1f',
+                'Salariati_publici': ':,.0f',
+                'Total_salariati': ':,.0f',
+                'An': False
+            },
+            featureidkey="properties.name",
+            projection="mercator",
+            color_continuous_scale="Reds",
+            range_color=[10, 25],
+            title=f"Evoluția procentului de salariați din sectorul public în timp - {'Regiunea Centru' if doar_centru else 'Romania'}"
+        )
+        
+        # Configurari pentru animatie
+        fig_animat.update_geos(
+            fitbounds="locations",
+            visible=False,
+            bgcolor="rgba(0,0,0,0)"
+        )
+        
+        fig_animat.update_layout(
+            width=1400,
+            height=900,
+            title=dict(font=dict(size=18)),
+            coloraxis_colorbar=dict(title="Procent salariati publici (%)"),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)"
+        )
+        
+        # Configurari pentru butoanele de animatie
+        fig_animat.layout.updatemenus = [
+            dict(
+                type="buttons",
+                direction="left",
+                pad={"r": 10, "t": 87},
+                showactive=False,
+                x=0.011,
+                xanchor="right",
+                y=0,
+                yanchor="top",
+                buttons=[
+                    dict(
+                        label="▶️ Play",
+                        method="animate",
+                        args=[None, {"frame": {"duration": 1500, "redraw": True},
+                                    "fromcurrent": True, 
+                                    "transition": {"duration": 300}}]
+                    ),
+                    dict(
+                        label="⏸️ Pause",
+                        method="animate",
+                        args=[[None], {"frame": {"duration": 0, "redraw": False},
+                                      "mode": "immediate",
+                                      "transition": {"duration": 0}}]
+                    )
+                ]
+            )
+        ]
+        
+        # Configurari pentru slider-ul de animatie
+        fig_animat.layout.sliders = [dict(
+            active=0,
+            yanchor="top",
+            xanchor="left",
+            currentvalue=dict(
+                font=dict(size=16), 
+                prefix="Anul: ",
+                visible=True,
+                xanchor="right"
+            ),
+            transition=dict(duration=300, easing="cubic-in-out"),
+            pad=dict(b=10, t=50),
+            len=0.9,
+            x=0.1,
+            y=0,
+            steps=[dict(
+                args=[[f.name], dict(
+                    frame=dict(duration=300, redraw=True),
+                    mode="immediate",
+                    transition=dict(duration=300)
+                )],
+                label=f.name,
+                method="animate"
+            ) for f in fig_animat.frames]
+        )]
+    
+    st.plotly_chart(fig_animat, use_container_width=True)
+
+def analiza_spatiala_public_privat():
+    # Analiza spatiala pentru salariati public vs privat
+    st.header("Analiza spatiala - Sectorul public vs privat")
+    # Incarca datele geografice
+    geo_data, geo_type = incarca_date_geografice()
+    if geo_data is None:
+        st.error("Nu s-au putut incarca datele geografice.")
+        return
+    # Incarca datele de salariati
+    df_salariati = incarca_date('Salariati2')
+    df_salariati = replace_total_with_romania(df_salariati)
+    # Selecteaza parametrii
+    ani = sorted([col for col in df_salariati.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    an = st.selectbox("Alege anul:", ani, index=0)
+    doar_centru = st.checkbox("Afiseaza doar regiunea Centru", value=True)
+    
+    # Defineste activitatile publice
+    activitati_publice = [
+        'O ADMINISTRATIE PUBLICA SI APARARE; ASIGURARI SOCIALE DIN SISTEMUL PUBLIC',
+        'P INVATAMANT',
+        'Q SANATATE SI ASISTENTA SOCIALA'
+    ]
+    # Filtreaza si pregateste datele pentru anul curent
+    df_filtrat = filtreaza_judete_pentru_harta(df_salariati, doar_centru)
+    df_filtrat = converteste_ani_la_float(df_filtrat, [an])
+    # Calculeaza totalul de salariati pe judete pentru anul curent
+    df_total = df_filtrat.groupby('Judete')[an].sum().reset_index()
+    df_total = df_total.rename(columns={an: 'Total_salariati'})
+    # Calculeaza salariati din sectorul public pentru anul curent
+    df_public = df_filtrat[df_filtrat['Activitati ale economiei'].isin(activitati_publice)]
+    df_public_total = df_public.groupby('Judete')[an].sum().reset_index()
+    df_public_total = df_public_total.rename(columns={an: 'Salariati_publici'})
+    # Uneste datele si calculeaza procentul pentru anul curent
+    df_analiza = df_total.merge(df_public_total, on='Judete', how='left')
+    df_analiza['Salariati_publici'] = df_analiza['Salariati_publici'].fillna(0)
+    df_analiza['Procent_public'] = (df_analiza['Salariati_publici'] / df_analiza['Total_salariati']) * 100
+    df_analiza['Procent_privat'] = 100 - df_analiza['Procent_public']
+    df_analiza['Judete_std'] = df_analiza['Judete'].apply(standardizeaza_nume_judete)
+    # Calculeaza statisticile pentru anul curent
+    total_salariati_publici = df_analiza['Salariati_publici'].sum()
+    total_salariati_general = df_analiza['Total_salariati'].sum()
+    total_salariati_privati = total_salariati_general - total_salariati_publici
+    procent_public_general = (total_salariati_publici / total_salariati_general) * 100
+    procent_privat_general = (total_salariati_privati / total_salariati_general) * 100
+    # Calculeaza cresterea fata de anul precedent
+    an_curent = int(an.split()[-1])
+    an_precedent_str = f"Anul {an_curent - 1}"
+    if an_curent == 2010:
+        # Pentru 2010, nu avem date din 2009
+        delta_public = "N/A - nu sunt date din 2009"
+        delta_privat = "N/A - nu sunt date din 2009"
+        delta_total = "N/A - nu sunt date din 2009"
+    elif an_precedent_str in df_salariati.columns:
+        # Calculeaza pentru anul precedent
+        df_filtrat_prec = filtreaza_judete_pentru_harta(df_salariati, doar_centru)
+        df_filtrat_prec = converteste_ani_la_float(df_filtrat_prec, [an_precedent_str])
+        # Total pentru anul precedent
+        df_total_prec = df_filtrat_prec.groupby('Judete')[an_precedent_str].sum().reset_index()
+        total_salariati_general_prec = df_total_prec[an_precedent_str].sum()
+        # Public pentru anul precedent
+        df_public_prec = df_filtrat_prec[df_filtrat_prec['Activitati ale economiei'].isin(activitati_publice)]
+        df_public_total_prec = df_public_prec.groupby('Judete')[an_precedent_str].sum().reset_index()
+        total_salariati_publici_prec = df_public_total_prec[an_precedent_str].sum()
+        # Privat pentru anul precedent
+        total_salariati_privati_prec = total_salariati_general_prec - total_salariati_publici_prec
+        
+        # Calculeaza cresterea procentuala
+        if total_salariati_publici_prec > 0:
+            crestere_public = ((total_salariati_publici - total_salariati_publici_prec) / total_salariati_publici_prec) * 100
+            delta_public = f"{crestere_public:+.1f}%"
+        else:
+            delta_public = "N/A"
+            
+        if total_salariati_privati_prec > 0:
+            crestere_privat = ((total_salariati_privati - total_salariati_privati_prec) / total_salariati_privati_prec) * 100
+            delta_privat = f"{crestere_privat:+.1f}%"
+        else:
+            delta_privat = "N/A"
+            
+        if total_salariati_general_prec > 0:
+            crestere_total = ((total_salariati_general - total_salariati_general_prec) / total_salariati_general_prec) * 100
+            delta_total = f"{crestere_total:+.1f}%"
+        else:
+            delta_total = "N/A"
+    else:
+        # Anul precedent nu există în date
+        delta_public = "N/A - nu sunt date disponibile"
+        delta_privat = "N/A - nu sunt date disponibile"
+        delta_total = "N/A - nu sunt date disponibile"
+    
+    # Afiseaza statistici sumare la inceput
+    st.markdown("#### Statistici sumare")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(
+            "Salariati sector public", 
+            f"{total_salariati_publici:,.0f}", 
+            delta_public
+        )
+    with col2:
+        st.metric(
+            "Salariati sector privat", 
+            f"{total_salariati_privati:,.0f}", 
+            delta_privat
+        )
+    with col3:
+        st.metric(
+            "Total salariati", 
+            f"{total_salariati_general:,.0f}", 
+            delta_total
+        )
+    # Explicatie scurta cu verde
+    st.markdown(
+        """
+        <div style="color:#28a745;font-weight:bold;margin:15px 0;">
+        Procentul reprezintă creșterea salariaților față de anul precedent.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    st.divider()
+    # Afiseaza harta choropleth
+    choropleth_public_privat(df_analiza, geo_data, geo_type, an, doar_centru)
+    # Afiseaza pie chart cu distributia generala
+    pie_chart_public_privat(df_analiza, an, doar_centru)
 
 def analiza_regresie_multipla():
     # Sectiune care realizeaza regresia multipla: rata somaj ~ absolventi + populatie activa
@@ -1615,12 +2285,11 @@ def main():
             "Structura absolventi pe niveluri (diagrama cu bare stivuite)",
             "Statistici descriptive",
             "Analiza spatiala",
+            "Sectorul public vs privat",
             "Regresie multipla"
         ),
         index=1  # Pozitie implicita
     )
-
-    nr_fig = 1  # Numarul figurii - incrementat pentru fiecare analiza
 
     if optiune == "Evolutie rata somaj (grafic cu linii)":
         st.header("Evolutia ratei somajului in regiunea Centru (grafic cu linii)")
@@ -1633,13 +2302,12 @@ def main():
         df_filtrat = df[(df['Sexe'] == sex) & ((df['Judete'].isin(['Alba', 'Brasov', 'Covasna',
                                                                     'Harghita', 'Mures', 'Sibiu'])) |
                                                 (df['Judete'].str.upper() == 'TOTAL'))]
-        grafic_linie_somaj(df_filtrat, ani, "Evolutia ratei somajului", "Rata somaj (%)", nr_fig)
+        grafic_linie_somaj(df_filtrat, ani, "Evolutia ratei somajului", "Rata somaj (%)")
 
     elif optiune == "Evolutie PIB (grafic cu linii)":
         analiza_pib_evolutie()
 
     elif optiune == "Comparatie rata somaj (harta termica)":
-        nr_fig += 1
         st.header("Comparatie rata somajului pe judete si ani (harta termica)")
         st.info("Harta termica permite compararea rapida a ratei somajului intre judete si ani.")
         df = incarca_date('Somaj')
@@ -1649,10 +2317,9 @@ def main():
         df = df[(df['Sexe'] == sex) & ((df['Judete'].isin(['Alba', 'Brasov', 'Covasna',
                                                            'Harghita', 'Mures', 'Sibiu'])) |
                                         (df['Judete'].str.upper() == 'TOTAL'))]
-        heatmap_judete_ani_interactiv(df, ani, "Harta termica rata somajului pe judete si ani", nr_fig)
+        heatmap_judete_ani_interactiv(df, ani, "Harta termica rata somajului pe judete si ani")
 
     elif optiune == "Judete dupa rata somaj (grafic cu bare)":
-        nr_fig += 2
         st.header("Top judete dupa rata somajului (grafic cu bare)")
         st.info("Acest grafic arata comparatia ratei somajului intre judete pentru anul selectat.")
         df = incarca_date('Somaj')
@@ -1663,10 +2330,9 @@ def main():
         df = df[(df['Sexe'] == sex) & ((df['Judete'].isin(['Alba', 'Brasov', 'Covasna',
                                                            'Harghita', 'Mures', 'Sibiu'])) |
                                         (df['Judete'].str.upper() == 'TOTAL'))]
-        bar_chart_an_interactiv(df, an, f"Rata somajului pe judete in {an.split()[-1]}", "Rata somaj (%)", nr_fig)
+        bar_chart_an_interactiv(df, an, f"Rata somajului pe judete in {an.split()[-1]}", "Rata somaj (%)")
 
     elif optiune == "Salariati pe activitati economice (grafic cu bare)":
-        nr_fig += 3
         st.header("Numar salariati pe activitati economice si judete (grafic cu bare)")
         st.info("Acest grafic arata distributia salariatilor pe activitati economice pentru fiecare judet.")
         df = incarca_date('Salariati2')
@@ -1675,10 +2341,9 @@ def main():
         an = st.selectbox("An", ani, index=0)
         df = df[(df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu'])) |
                 (df['Judete'].str.upper() == 'TOTAL')]
-        bar_chart_salariati_activitati(df, ani, an, nr_fig)
+        bar_chart_salariati_activitati(df, ani, an)
 
     elif optiune == "Salariati pe activitati economice (grafice circulare)":
-        nr_fig += 4
         st.header("Structura salariatilor pe activitati economice (grafice circulare pe judete)")
         st.info("Fiecare grafic circular arata structura salariatilor pe activitati economice pentru un judet.")
         df = incarca_date('Salariati2')
@@ -1687,10 +2352,9 @@ def main():
         an = st.selectbox("An", ani, index=0)
         df = df[(df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu'])) |
                 (df['Judete'].str.upper() == 'TOTAL')]
-        pie_charts_salariati_judete(df, ani, an, nr_fig)
+        pie_charts_salariati_judete(df, ani, an)
 
     elif optiune == "Corelatie rata somaj - ocupare (diagrama de dispersie)":
-        nr_fig += 5
         st.header("Corelatie intre rata somajului si rata de ocupare a resurselor de munca (diagrama de dispersie)")
         st.info("Aceasta diagrama de dispersie arata relatia dintre rata somajului si rata de ocupare a resurselor de munca.")
         df_somaj = incarca_date('Somaj')
@@ -1707,24 +2371,26 @@ def main():
         scatter_corelatie_interactiv(
             df_somaj, df_resurse, an,
             f"Corelatie rata somaj - rata de ocupare ({an.split()[-1]})",
-            "Rata somaj (%)", "Rata de ocupare (%)", nr_fig
+            "Rata somaj (%)", "Rata de ocupare (%)"
         )
 
     elif optiune == "Structura absolventi pe niveluri (diagrama cu bare stivuite)":
-        nr_fig += 6
         st.header("Structura absolventilor pe niveluri de educatie (diagrama cu bare stivuite)")
         st.info("Aceasta diagrama cu bare stivuite arata structura absolventilor pe niveluri de educatie pentru judetul selectat.")
         df = filtreaza_regiunea_centru_si_romania(incarca_date('Absolventi'))
         ani = sorted([col for col in df.columns if col.startswith('Anul')],
                      key=lambda x: int(x.split()[-1]), reverse=True)
         judet = st.selectbox("Alege judetul", df['Judete'].unique())
-        stacked_bar_absolventi_interactiv(df, ani, judet, nr_fig)
+        stacked_bar_absolventi_interactiv(df, ani, judet)
 
     elif optiune == "Statistici descriptive":
         analiza_statistici_descriptive()
 
     elif optiune == "Analiza spatiala":
         analiza_spatiala_choropleth()
+
+    elif optiune == "Sectorul public vs privat":
+        analiza_spatiala_public_privat()
 
     elif optiune == "Regresie multipla":
         analiza_regresie_multipla()
