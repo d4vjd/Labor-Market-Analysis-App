@@ -1605,14 +1605,14 @@ def main():
     optiune = st.sidebar.radio(
         "📊 Alege analiza:",
         (
-            "Evolutie rata somaj (linie)",
-            "Evolutie PIB (linie)",
-            "Comparatie rata somaj (heatmap)",
-            "Judete dupa rata somaj (bar chart)",
-            "Salariati pe activitati economice (bar chart)",
-            "Salariati pe activitati economice (pie chart)",
-            "Corelatie rata somaj - ocupare (scatter)",
-            "Structura absolventi pe niveluri (stacked bar)",
+            "Evolutie rata somaj (grafic cu linii)",
+            "Evolutie PIB (grafic cu linii)",
+            "Comparatie rata somaj (harta termica)",
+            "Judete dupa rata somaj (grafic cu bare)",
+            "Salariati pe activitati economice (grafic cu bare)",
+            "Salariati pe activitati economice (grafice circulare)",
+            "Corelatie rata somaj - ocupare (diagrama de dispersie)",
+            "Structura absolventi pe niveluri (diagrama cu bare stivuite)",
             "Statistici descriptive",
             "Analiza spatiala",
             "Regresie multipla"
@@ -1622,8 +1622,8 @@ def main():
 
     nr_fig = 1  # Numarul figurii - incrementat pentru fiecare analiza
 
-    if optiune == "Evolutie rata somaj (linie)":
-        st.header("Evolutia ratei somajului in regiunea Centru (linie)")
+    if optiune == "Evolutie rata somaj (grafic cu linii)":
+        st.header("Evolutia ratei somajului in regiunea Centru (grafic cu linii)")
         st.info("Acest grafic arata evolutia ratei somajului in timp pentru fiecare judet din regiunea Centru. "
                 "Linia alba punctata reprezinta media nationala.")
         df = incarca_date('Somaj')
@@ -1635,13 +1635,13 @@ def main():
                                                 (df['Judete'].str.upper() == 'TOTAL'))]
         grafic_linie_somaj(df_filtrat, ani, "Evolutia ratei somajului", "Rata somaj (%)", nr_fig)
 
-    elif optiune == "Evolutie PIB (linie)":
+    elif optiune == "Evolutie PIB (grafic cu linii)":
         analiza_pib_evolutie()
 
-    elif optiune == "Comparatie rata somaj (heatmap)":
+    elif optiune == "Comparatie rata somaj (harta termica)":
         nr_fig += 1
-        st.header("Comparatie rata somajului pe judete si ani (heatmap)")
-        st.info("Heatmap-ul permite compararea rapida a ratei somajului intre judete si ani.")
+        st.header("Comparatie rata somajului pe judete si ani (harta termica)")
+        st.info("Harta termica permite compararea rapida a ratei somajului intre judete si ani.")
         df = incarca_date('Somaj')
         ani = sorted([col for col in df.columns if col.startswith('Anul')],
                      key=lambda x: int(x.split()[-1]), reverse=True)
@@ -1649,11 +1649,11 @@ def main():
         df = df[(df['Sexe'] == sex) & ((df['Judete'].isin(['Alba', 'Brasov', 'Covasna',
                                                            'Harghita', 'Mures', 'Sibiu'])) |
                                         (df['Judete'].str.upper() == 'TOTAL'))]
-        heatmap_judete_ani_interactiv(df, ani, "Heatmap rata somajului pe judete si ani", nr_fig)
+        heatmap_judete_ani_interactiv(df, ani, "Harta termica rata somajului pe judete si ani", nr_fig)
 
-    elif optiune == "Judete dupa rata somaj (bar chart)":
+    elif optiune == "Judete dupa rata somaj (grafic cu bare)":
         nr_fig += 2
-        st.header("Top judete dupa rata somajului (bar chart)")
+        st.header("Top judete dupa rata somajului (grafic cu bare)")
         st.info("Acest grafic arata comparatia ratei somajului intre judete pentru anul selectat.")
         df = incarca_date('Somaj')
         ani = sorted([col for col in df.columns if col.startswith('Anul')],
@@ -1665,9 +1665,9 @@ def main():
                                         (df['Judete'].str.upper() == 'TOTAL'))]
         bar_chart_an_interactiv(df, an, f"Rata somajului pe judete in {an.split()[-1]}", "Rata somaj (%)", nr_fig)
 
-    elif optiune == "Salariati pe activitati economice (bar chart)":
+    elif optiune == "Salariati pe activitati economice (grafic cu bare)":
         nr_fig += 3
-        st.header("Numar salariati pe activitati economice si judete (bar chart)")
+        st.header("Numar salariati pe activitati economice si judete (grafic cu bare)")
         st.info("Acest grafic arata distributia salariatilor pe activitati economice pentru fiecare judet.")
         df = incarca_date('Salariati2')
         ani = sorted([col for col in df.columns if col.startswith('Anul')],
@@ -1677,10 +1677,10 @@ def main():
                 (df['Judete'].str.upper() == 'TOTAL')]
         bar_chart_salariati_activitati(df, ani, an, nr_fig)
 
-    elif optiune == "Salariati pe activitati economice (pie chart)":
+    elif optiune == "Salariati pe activitati economice (grafice circulare)":
         nr_fig += 4
-        st.header("Structura salariatilor pe activitati economice (pie chart pe judete)")
-        st.info("Fiecare pie chart arata structura salariatilor pe activitati economice pentru un judet.")
+        st.header("Structura salariatilor pe activitati economice (grafice circulare pe judete)")
+        st.info("Fiecare grafic circular arata structura salariatilor pe activitati economice pentru un judet.")
         df = incarca_date('Salariati2')
         ani = sorted([col for col in df.columns if col.startswith('Anul')],
                      key=lambda x: int(x.split()[-1]), reverse=True)
@@ -1689,10 +1689,10 @@ def main():
                 (df['Judete'].str.upper() == 'TOTAL')]
         pie_charts_salariati_judete(df, ani, an, nr_fig)
 
-    elif optiune == "Corelatie rata somaj - ocupare (scatter)":
+    elif optiune == "Corelatie rata somaj - ocupare (diagrama de dispersie)":
         nr_fig += 5
-        st.header("Corelatie intre rata somajului si rata de ocupare a resurselor de munca (scatter)")
-        st.info("Acest scatter plot arata relatia dintre rata somajului si rata de ocupare a resurselor de munca.")
+        st.header("Corelatie intre rata somajului si rata de ocupare a resurselor de munca (diagrama de dispersie)")
+        st.info("Aceasta diagrama de dispersie arata relatia dintre rata somajului si rata de ocupare a resurselor de munca.")
         df_somaj = incarca_date('Somaj')
         df_resurse = incarca_date('Resurse')
         ani = sorted([col for col in df_somaj.columns if col.startswith('Anul')],
@@ -1710,10 +1710,10 @@ def main():
             "Rata somaj (%)", "Rata de ocupare (%)", nr_fig
         )
 
-    elif optiune == "Structura absolventi pe niveluri (stacked bar)":
+    elif optiune == "Structura absolventi pe niveluri (diagrama cu bare stivuite)":
         nr_fig += 6
-        st.header("Structura absolventilor pe niveluri de educatie (stacked bar)")
-        st.info("Acest stacked bar chart arata structura absolventilor pe niveluri de educatie pentru judetul selectat.")
+        st.header("Structura absolventilor pe niveluri de educatie (diagrama cu bare stivuite)")
+        st.info("Aceasta diagrama cu bare stivuite arata structura absolventilor pe niveluri de educatie pentru judetul selectat.")
         df = filtreaza_regiunea_centru_si_romania(incarca_date('Absolventi'))
         ani = sorted([col for col in df.columns if col.startswith('Anul')],
                      key=lambda x: int(x.split()[-1]), reverse=True)
