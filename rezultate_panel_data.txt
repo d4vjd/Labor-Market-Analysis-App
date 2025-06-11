@@ -1,0 +1,124 @@
+Procesarea datelor pentru Salariu...
+Valori unice în coloana Sexe pentru Salariu : Total, Masculin, Feminin 
+Numărul de rânduri după filtrarea pentru Total: 43 
+Procesarea datelor pentru Imigranti...
+Procesarea datelor pentru Rata Somaj...
+Valori unice în coloana Sexe pentru Rata_Somaj : Total, Masculin, Feminin 
+Numărul de rânduri după filtrarea pentru Total: 43 
+Procesarea datelor pentru Rata Ocupare...
+Procesarea datelor pentru Populatia Activa...
+Valori unice în coloana Sexe pentru Pop_Activa : Masculin, Feminin, Total 
+Numărul de rânduri după filtrarea pentru Total: 42 
+Combinarea datelor...
+Standardizarea datelor...
+Structura datelor panel:
+tibble [546 × 7] (S3: tbl_df/tbl/data.frame)
+ $ Judete      : chr [1:546] "Alba" "Alba" "Alba" "Alba" ...
+ $ An          : num [1:546] 2010 2011 2012 2013 2014 ...
+ $ Salariu     : num [1:546] -1.022 -1.039 -0.977 -0.916 -0.773 ...
+ $ Imigranti   : num [1:546] -0.334 -0.345 -0.346 -0.338 -0.338 ...
+ $ Rata_Somaj  : num [1:546] 1.95 1.029 1.31 2.03 0.869 ...
+ $ Rata_Ocupare: num [1:546] 0.166 0.251 0.517 0.57 1.494 ...
+ $ Pop_Activa  : num [1:546] -0.199 -0.217 -0.174 -0.153 -0.212 ...
+
+Primele 10 rânduri:
+# A tibble: 10 × 7
+   Judete    An Salariu Imigranti Rata_Somaj Rata_Ocupare Pop_Activa
+   <chr>  <dbl>   <dbl>     <dbl>      <dbl>        <dbl>      <dbl>
+ 1 Alba    2010 -1.02      -0.334     1.95          0.166     -0.199
+ 2 Alba    2011 -1.04      -0.345     1.03          0.251     -0.217
+ 3 Alba    2012 -0.977     -0.346     1.31          0.517     -0.174
+ 4 Alba    2013 -0.916     -0.338     2.03          0.570     -0.153
+ 5 Alba    2014 -0.773     -0.338     0.869         1.49      -0.212
+ 6 Alba    2015 -0.571     -0.333     0.189         1.57      -0.233
+ 7 Alba    2016 -0.339     -0.327    -0.0114        1.56      -0.234
+ 8 Alba    2017  0.0380    -0.326    -0.572         1.79      -0.235
+ 9 Alba    2018  0.451     -0.321    -0.692         2.01      -0.235
+10 Alba    2019  0.827     -0.319    -0.812         2.13      -0.234
+Definirea structurii panel data...
+Informații despre panelul de date:
+Balanced Panel: n = 42, T = 13, N = 546
+
+=== MODELUL 1: FIXED EFFECTS ===
+Oneway (individual) effect Within Model
+
+Call:
+plm(formula = Salariu ~ Imigranti + Rata_Somaj + Rata_Ocupare + 
+    Pop_Activa, data = panel_pdata, model = "within")
+
+Balanced Panel: n = 42, T = 13, N = 546
+
+Residuals:
+     Min.   1st Qu.    Median   3rd Qu.      Max. 
+-1.548817 -0.394844 -0.084152  0.331147  2.691460 
+
+Coefficients:
+              Estimate Std. Error  t-value  Pr(>|t|)    
+Imigranti     0.276490   0.046662   5.9253 5.808e-09 ***
+Rata_Somaj   -1.112099   0.054922 -20.2485 < 2.2e-16 ***
+Rata_Ocupare  0.042407   0.062213   0.6816  0.495783    
+Pop_Activa   -1.037893   0.326945  -3.1745  0.001593 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Total Sum of Squares:    467.72
+Residual Sum of Squares: 168.26
+R-Squared:      0.64026
+Adj. R-Squared: 0.60789
+F-statistic: 222.475 on 4 and 500 DF, p-value: < 2.22e-16
+
+=== MODELUL 2: RANDOM EFFECTS ===
+Oneway (individual) effect Random Effect Model 
+   (Swamy-Arora's transformation)
+
+Call:
+plm(formula = Salariu ~ Imigranti + Rata_Somaj + Rata_Ocupare + 
+    Pop_Activa, data = panel_pdata, model = "random")
+
+Balanced Panel: n = 42, T = 13, N = 546
+
+Effects:
+                  var std.dev share
+idiosyncratic 0.33651 0.58010 0.937
+individual    0.02257 0.15025 0.063
+theta: 0.2691
+
+Residuals:
+     Min.   1st Qu.    Median   3rd Qu.      Max. 
+-1.977198 -0.553702 -0.072856  0.525829  2.463928 
+
+Coefficients:
+                Estimate  Std. Error  z-value  Pr(>|z|)    
+(Intercept)  -5.1074e-16  4.1809e-02   0.0000  1.000000    
+Imigranti     3.1267e-01  4.2487e-02   7.3592  1.85e-13 ***
+Rata_Somaj   -7.2608e-01  4.1321e-02 -17.5715 < 2.2e-16 ***
+Rata_Ocupare  2.6614e-02  4.8461e-02   0.5492  0.582880    
+Pop_Activa   -1.4790e-01  5.4560e-02  -2.7108  0.006711 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Total Sum of Squares:    509
+Residual Sum of Squares: 275.8
+R-Squared:      0.45816
+Adj. R-Squared: 0.45415
+Chisq: 457.444 on 4 DF, p-value: < 2.22e-16
+
+============================================================
+COMPARAREA MODELELOR
+============================================================
+
+1. HAUSMAN TEST (Fixed Effects vs Random Effects):
+H0: Random Effects model este preferat
+H1: Fixed Effects model este preferat
+
+	Hausman Test
+
+data:  Salariu ~ Imigranti + Rata_Somaj + Rata_Ocupare + Pop_Activa
+chisq = 157.27, df = 4, p-value < 2.2e-16
+alternative hypothesis: one model is inconsistent
+
+Rezultat: Fixed Effects model este preferat (p < 0.05)
+
+2. COMPARAREA R-SQUARED:
+Fixed Effects R-squared: 0.6403 
+Random Effects R-squared: 0.4582 
