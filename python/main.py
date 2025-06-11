@@ -1148,16 +1148,16 @@ def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
 
     # Paleta de culori pentru niveluri de educatie (ordinea reflecta semnificatia nivelurilor)
     PALETA_EDUCATIE = [
-        "#FEC5F6",  # Invatamant universitar - doctorat si postdoctorat (cel mai sus)
-        "#FF9800",  # Invatamant universitar - licenta
-        "#43A047",  # Invatamant postliceal
-        "#8E24AA",  # Invatamant liceal (tehnologic)
-        "#E53935",  # Invatamant profesional
-        "#00ACC1",  # Invatamant profesional si tehnic (alte filiere)
-        "#FDD835",  # Invatamant gimnazial
-        "#6D4C41",  # Invatamant primar
-        "#C0CA33",  # Alte categorii (daca apar)
-        "#F06292",  # Alte categorii (daca apar)
+        "#1976D2",
+        "#FF9800",
+        "#43A047",
+        "#8E24AA",
+        "#E53935",
+        "#ADEED9",
+        "#FDD835",
+        "#FEC5F6",
+        "#C0CA33",
+        "#00ACC1",
     ]
 
     fig = go.Figure()
