@@ -1148,7 +1148,7 @@ def stacked_bar_absolventi_interactiv(df, ani, judet_selectat, nr_fig):
 
     # Paleta de culori pentru niveluri de educatie (ordinea reflecta semnificatia nivelurilor)
     PALETA_EDUCATIE = [
-        "#1976D2",  # Invatamant universitar - doctorat si postdoctorat (cel mai sus)
+        "#FEC5F6",  # Invatamant universitar - doctorat si postdoctorat (cel mai sus)
         "#FF9800",  # Invatamant universitar - licenta
         "#43A047",  # Invatamant postliceal
         "#8E24AA",  # Invatamant liceal (tehnologic)
