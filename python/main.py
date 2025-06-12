@@ -2265,16 +2265,29 @@ Rata\_somaj = \beta_0 + \beta_1 \cdot Absolventi\_totali^{(standardizat)} + \bet
     )
 
 def pagina_principala():
-    # Pagina de landing cu descrierea aplicatiei si informatii generale
+    # Pagina de landing cu design modern și estetic
     
-    # Header principal cu stil
+    # Import font modern
+    st.markdown("""
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .main-font {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Header principal cu design modern
     st.markdown("""
     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                padding: 40px; border-radius: 15px; margin-bottom: 30px; text-align: center;">
-        <h1 style="color: white; font-size: 3.5em; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                padding: 60px 40px; border-radius: 20px; margin-bottom: 50px; text-align: center;
+                box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);" class="main-font">
+        <h1 style="color: white; font-size: 3.5em; margin-bottom: 20px; font-weight: 700; 
+                   letter-spacing: -2px; text-shadow: 0 4px 8px rgba(0,0,0,0.2);">
             📊 Analiza Pieței Muncii
         </h1>
-        <h2 style="color: #f0f0f0; font-size: 1.8em; font-weight: 300; margin-bottom: 0;">
+        <h2 style="color: rgba(255,255,255,0.9); font-size: 1.8em; font-weight: 400; 
+                   margin-bottom: 0; letter-spacing: 0.5px;">
             Regiunea Centru - România
         </h2>
     </div>
@@ -2282,39 +2295,52 @@ def pagina_principala():
     
     # Sectiune descriere aplicatie
     st.markdown("""
-    <div style="background-color: #f8f9fa; padding: 30px; border-radius: 12px; margin-bottom: 25px; 
-                border-left: 5px solid #007bff;">
-        <h3 style="color: #2c3e50; margin-bottom: 20px;">🎯 Despre această aplicație</h3>
-        <p style="font-size: 1.1em; line-height: 1.8; color: #495057; text-align: justify;">
-            Această aplicație oferă o analiză comprehensivă a indicatorilor pieței muncii din 
-            <strong>Regiunea Centru a României</strong>, care include județele: <strong>Alba, Brașov, Covasna, 
-            Harghita, Mureș și Sibiu</strong>. Prin intermediul unor vizualizări interactive și analize 
-            statistice avansate, utilizatorii pot explora evoluția în timp a diferitelor metrici economice 
-            și demografice.
+    <div style="background: linear-gradient(145deg, #f8fafc, #ffffff); 
+                padding: 40px; border-radius: 16px; margin-bottom: 50px; 
+                border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" class="main-font">
+        <h3 style="color: #1e293b; margin-bottom: 25px; font-weight: 600; font-size: 1.8em;">
+            🎯 Despre această aplicație
+        </h3>
+        <p style="font-size: 1.2em; line-height: 1.8; color: #475569; text-align: justify; 
+                  font-weight: 400; margin: 0;">
+            Această aplicație oferă un suport vizual în cadrul unei analize a pieței muncii din 
+            <strong style="color: #3b82f6;">Regiunea Centru a României </strong>
+            (Alba, Brașov, Covasna, Harghita, Mureș și Sibiu). Prin intermediul unor 
+            grafice interactive și analize statistice avansate, utilizatorii pot explora evoluția 
+            în timp a diferitelor date economice și demografice.
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Sectiune caracteristici principale
+    # Sectiune caracteristici principale - titlu mai vizibil
     st.markdown("""
-    <div style="margin-bottom: 30px;">
-        <h3 style="color: #2c3e50; text-align: center; margin-bottom: 30px;">
+    <div style="text-align: center; margin: 60px 0 40px 0;" class="main-font">
+        <h2 style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+                   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                   background-clip: text; font-size: 2.5em; font-weight: 700; 
+                   margin-bottom: 10px; letter-spacing: -1px;">
             ⭐ Caracteristicile principale
-        </h3>
+        </h2>
+        <div style="width: 100px; height: 4px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+                    margin: 0 auto; border-radius: 2px;"></div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Grid cu caracteristici
+    # Grid cu caracteristici - design modern
     col1, col2, col3 = st.columns(3)
     
     with col1:
         st.markdown("""
-        <div style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); 
-                    padding: 25px; border-radius: 12px; text-align: center; height: 200px; 
-                    display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 3em; margin-bottom: 15px;">📈</div>
-            <h4 style="color: white; margin-bottom: 10px;">Analize temporale</h4>
-            <p style="color: #f8f9fa; font-size: 0.9em;">
+        <div style="background: linear-gradient(135deg, #3b82f6, #1e40af); 
+                    padding: 35px 25px; border-radius: 20px; text-align: center; height: 240px; 
+                    display: flex; flex-direction: column; justify-content: center;
+                    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+                    transition: transform 0.3s ease;" class="main-font">
+            <div style="font-size: 3.5em; margin-bottom: 20px;">📈</div>
+            <h4 style="color: white; margin-bottom: 15px; font-weight: 600; font-size: 1.3em;">
+                Analize temporale
+            </h4>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1em; line-height: 1.5; margin: 0;">
                 Urmărirea evoluției indicatorilor în timp prin grafice interactive
             </p>
         </div>
@@ -2322,12 +2348,16 @@ def pagina_principala():
     
     with col2:
         st.markdown("""
-        <div style="background: linear-gradient(135deg, #4ecdc4, #20bf6b); 
-                    padding: 25px; border-radius: 12px; text-align: center; height: 200px;
-                    display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 3em; margin-bottom: 15px;">🗺️</div>
-            <h4 style="color: white; margin-bottom: 10px;">Analize spațiale</h4>
-            <p style="color: #f8f9fa; font-size: 0.9em;">
+        <div style="background: linear-gradient(135deg, #10b981, #047857); 
+                    padding: 35px 25px; border-radius: 20px; text-align: center; height: 240px;
+                    display: flex; flex-direction: column; justify-content: center;
+                    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+                    transition: transform 0.3s ease;" class="main-font">
+            <div style="font-size: 3.5em; margin-bottom: 20px;">🗺️</div>
+            <h4 style="color: white; margin-bottom: 15px; font-weight: 600; font-size: 1.3em;">
+                Analize spațiale
+            </h4>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1em; line-height: 1.5; margin: 0;">
                 Vizualizări pe hartă pentru comparații între județe
             </p>
         </div>
@@ -2335,123 +2365,139 @@ def pagina_principala():
     
     with col3:
         st.markdown("""
-        <div style="background: linear-gradient(135deg, #a55eea, #8854d0); 
-                    padding: 25px; border-radius: 12px; text-align: center; height: 200px;
-                    display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 3em; margin-bottom: 15px;">📊</div>
-            <h4 style="color: white; margin-bottom: 10px;">Statistici avansate</h4>
-            <p style="color: #f8f9fa; font-size: 0.9em;">
+        <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); 
+                    padding: 35px 25px; border-radius: 20px; text-align: center; height: 240px;
+                    display: flex; flex-direction: column; justify-content: center;
+                    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+                    transition: transform 0.3s ease;" class="main-font">
+            <div style="font-size: 3.5em; margin-bottom: 20px;">🔬</div>
+            <h4 style="color: white; margin-bottom: 15px; font-weight: 600; font-size: 1.3em;">
+                Statistici avansate
+            </h4>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1em; line-height: 1.5; margin: 0;">
                 Analize de corelație și modele de regresie multiplă
             </p>
         </div>
         """, unsafe_allow_html=True)
     
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
     
-    # Sectiune indicatori disponibili
+    # Sectiune indicatori și tipuri de analiză - carduri complete
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
-        <div style="background-color: #e8f4fd; padding: 25px; border-radius: 12px; height: 280px;">
-            <h4 style="color: #1e3a8a; margin-bottom: 20px;">📋 Indicatori disponibili</h4>
-            <ul style="color: #1e40af; line-height: 1.8; font-size: 0.95em;">
-                <li><strong>Piața muncii:</strong> Rata șomajului, rata de ocupare</li>
-                <li><strong>Populația:</strong> Populația activă, imigranți definitivi</li>
-                <li><strong>Educația:</strong> Numărul absolvenților pe niveluri</li>
-                <li><strong>Economia:</strong> PIB regional pe locuitor</li>
-                <li><strong>Salarii:</strong> Câștigul salarial mediu net</li>
-                <li><strong>Sectoare:</strong> Salariați pe activități economice</li>
-            </ul>
+        <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); 
+                    padding: 35px; border-radius: 20px; height: 420px;
+                    border: 1px solid #e2e8f0; box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+                    overflow-y: auto;" class="main-font">
+            <h4 style="color: #1e293b; margin-bottom: 30px; font-weight: 600; font-size: 1.5em; 
+                       display: flex; align-items: center;">
+                <span style="margin-right: 10px;">📋</span> Indicatori disponibili
+            </h4>
+            <div style="space-y: 15px;">
+                <div style="margin-bottom: 18px; padding: 12px; background: #f1f5f9; border-radius: 10px;">
+                    <span style="color: #3b82f6; font-weight: 600;">💼 Piața muncii:</span>
+                    <span style="color: #475569; margin-left: 8px;">Rata șomajului, Rata de ocupare a resurselor de muncă</span>
+                </div>
+                <div style="margin-bottom: 18px; padding: 12px; background: #f1f5f9; border-radius: 10px;">
+                    <span style="color: #10b981; font-weight: 600;">👥 Populația:</span>
+                    <span style="color: #475569; margin-left: 8px;">Populația activă, Imigranți definitivi</span>
+                </div>
+                <div style="margin-bottom: 18px; padding: 12px; background: #f1f5f9; border-radius: 10px;">
+                    <span style="color: #8b5cf6; font-weight: 600;">🎓 Educația:</span>
+                    <span style="color: #475569; margin-left: 8px;">Numărul absolvenților pe niveluri de educație</span>
+                </div>
+                <div style="margin-bottom: 18px; padding: 12px; background: #f1f5f9; border-radius: 10px;">
+                    <span style="color: #f59e0b; font-weight: 600;">💰 Economia:</span>
+                    <span style="color: #475569; margin-left: 8px;">PIB regional pe locuitor, Salariați pe activități economice, Câștigul salarial mediu net</span>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
-        <div style="background-color: #f0f9ff; padding: 25px; border-radius: 12px; height: 280px;">
-            <h4 style="color: #1e3a8a; margin-bottom: 20px;">🛠️ Tipuri de analiză</h4>
-            <ul style="color: #1e40af; line-height: 1.8; font-size: 0.95em;">
-                <li><strong>Grafice de evoluție</strong> în timp</li>
-                <li><strong>Hărți coroplete</strong> interactive</li>
-                <li><strong>Hărți termice</strong> pentru comparații</li>
-                <li><strong>Grafice circulare</strong> pentru structuri</li>
-                <li><strong>Diagrame de dispersie</strong> pentru corelații</li>
-                <li><strong>Statistici descriptive</strong> și teste</li>
-            </ul>
+        <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); 
+                    padding: 35px; border-radius: 20px; height: 420px;
+                    border: 1px solid #e2e8f0; box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+                    overflow-y: auto;" class="main-font">
+            <h4 style="color: #1e293b; margin-bottom: 30px; font-weight: 600; font-size: 1.5em; 
+                       display: flex; align-items: center;">
+                <span style="margin-right: 10px;">🛠️</span> Tipuri de analiză
+            </h4>
+            <div style="space-y: 15px;">
+                <div style="margin-bottom: 18px; padding: 12px; background: #fef3c7; border-radius: 10px;">
+                    <span style="color: #92400e; font-weight: 600;">📊 Grafice de evoluție</span>
+                    <span style="color: #78350f; margin-left: 8px;">în timp</span>
+                </div>
+                <div style="margin-bottom: 18px; padding: 12px; background: #dbeafe; border-radius: 10px;">
+                    <span style="color: #1e40af; font-weight: 600;">🗺️ Hărți coropletice</span>
+                    <span style="color: #1e3a8a; margin-left: 8px;">interactive</span>
+                </div>
+                <div style="margin-bottom: 18px; padding: 12px; background: #dcfce7; border-radius: 10px;">
+                    <span style="color: #15803d; font-weight: 600;">🔥 Hărți termice</span>
+                    <span style="color: #14532d; margin-left: 8px;">pentru comparații</span>
+                </div>
+                <div style="margin-bottom: 18px; padding: 12px; background: #fce7f3; border-radius: 10px;">
+                    <span style="color: #be185d; font-weight: 600;">🥧 Grafice circulare</span>
+                    <span style="color: #9d174d; margin-left: 8px;">pentru structuri</span>
+                </div>
+                <div style="margin-bottom: 18px; padding: 12px; background: #ede9fe; border-radius: 10px;">
+                    <span style="color: #7c3aed; font-weight: 600;">📈 Corelograme</span>
+                    <span style="color: #6d28d9; margin-left: 8px;">pentru corelații</span>
+                </div>
+                <div style="margin-bottom: 0; padding: 12px; background: #f0fdfa; border-radius: 10px;">
+                    <span style="color: #0f766e; font-weight: 600;">📋 Statistici descriptive</span>
+                    <span style="color: #134e4a; margin-left: 8px;">și teste</span>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
     
-    # Sectiune sursa datelor
+    # Sectiune sursa datelor - design modern
     st.markdown("""
-    <div style="background: linear-gradient(135deg, #ffeaa7, #fdcb6e); 
-                padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center;">
-        <h3 style="color: #2d3436; margin-bottom: 20px;">📊 Sursa datelor</h3>
-        <p style="color: #2d3436; font-size: 1.2em; margin-bottom: 15px;">
-            <strong>Institutul Național de Statistică (INS)</strong>
+    <div style="background: linear-gradient(135deg, #ec4899, #be185d); 
+                padding: 40px; border-radius: 20px; margin: 50px 0; text-align: center;
+                box-shadow: 0 20px 40px rgba(236, 72, 153, 0.3);" class="main-font">
+        <h3 style="color: white; margin-bottom: 25px; font-weight: 600; font-size: 1.8em;
+                   display: flex; align-items: center; justify-content: center;">
+            <span style="margin-right: 15px;">📊</span> Sursa datelor
+        </h3>
+        <p style="color: white; font-size: 1.4em; margin-bottom: 20px; font-weight: 600;">
+            Institutul Național de Statistică (INS)
         </p>
-        <p style="color: #636e72; font-size: 1em; margin-bottom: 10px;">
+        <p style="color: rgba(255,255,255,0.9); font-size: 1.1em; margin-bottom: 15px; font-weight: 400;">
             Datele sunt preluate prin intermediul platformei
         </p>
-        <p style="color: #2d3436; font-size: 1.3em; font-weight: bold;">
-            🌐 TEMPO Online
-        </p>
-        <p style="color: #636e72; font-size: 0.9em; font-style: italic;">
-            Baza de date statistice a României - tempo-online.ro
+        <p style="color: white; font-size: 1.6em; font-weight: 700; margin-bottom: 10px;">
+            TEMPO Online
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Sectiune perioada de acoperire
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("""
-        <div style="background-color: #ddd6fe; padding: 20px; border-radius: 12px; text-align: center;">
-            <div style="font-size: 2.5em; margin-bottom: 10px;">📅</div>
-            <h4 style="color: #5b21b6; margin-bottom: 5px;">Perioada</h4>
-            <p style="color: #7c3aed; font-weight: bold;">2010 - 2023</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div style="background-color: #fecaca; padding: 20px; border-radius: 12px; text-align: center;">
-            <div style="font-size: 2.5em; margin-bottom: 10px;">🏛️</div>
-            <h4 style="color: #b91c1c; margin-bottom: 5px;">Județe</h4>
-            <p style="color: #dc2626; font-weight: bold;">6 județe</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("""
-        <div style="background-color: #bbf7d0; padding: 20px; border-radius: 12px; text-align: center;">
-            <div style="font-size: 2.5em; margin-bottom: 10px;">📈</div>
-            <h4 style="color: #15803d; margin-bottom: 5px;">Indicatori</h4>
-            <p style="color: #16a34a; font-weight: bold;">10+ metrici</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Sectiune instructiuni de utilizare
+    # Sectiune perioada de acoperire - design modern
     st.markdown("""
-    <div style="background-color: #f1f5f9; padding: 25px; border-radius: 12px; margin-top: 30px; 
-                border: 2px solid #e2e8f0;">
-        <h3 style="color: #1e293b; margin-bottom: 20px;">🚀 Cum să utilizezi aplicația</h3>
-        <div style="color: #475569; font-size: 1.05em; line-height: 1.7;">
-            <p><strong>1.</strong> Selectează tipul de analiză dorită din <strong>meniul din stânga</strong></p>
-            <p><strong>2.</strong> Configurează parametrii (anul, sexul, județul) folosind controalele interactive</p>
-            <p><strong>3.</strong> Explorează graficele și tabelele generate automat</p>
-            <p><strong>4.</strong> Descarcă sau salvează rezultatele pentru utilizare ulterioară</p>
+    <div style="background: linear-gradient(135deg, #1f2937, #374151); 
+                padding: 40px; border-radius: 20px; margin-top: 40px;
+                box-shadow: 0 20px 40px rgba(31, 41, 55, 0.4);" class="main-font">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; text-align: center;">
+            <div style="color: white;">
+                <div style="font-size: 3em; margin-bottom: 15px;">📅</div>
+                <h4 style="margin-bottom: 10px; font-weight: 600; font-size: 1.3em;">Perioada</h4>
+                <p style="font-weight: 500; font-size: 1.2em; color: #9ca3af; margin: 0;">2010 - 2023</p>
+            </div>
+            <div style="color: white;">
+                <div style="font-size: 3em; margin-bottom: 15px;">🌍</div>
+                <h4 style="margin-bottom: 10px; font-weight: 600; font-size: 1.3em;">Acoperire</h4>
+                <p style="font-weight: 500; font-size: 1.2em; color: #9ca3af; margin: 0;">Regiunea Centru</p>
+            </div>
+            <div style="color: white;">
+                <div style="font-size: 3em; margin-bottom: 15px;">⚡</div>
+                <h4 style="margin-bottom: 10px; font-weight: 600; font-size: 1.3em;">Frecvență</h4>
+                <p style="font-weight: 500; font-size: 1.2em; color: #9ca3af; margin: 0;">Date anuale</p>
+            </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Footer
-    st.markdown("""
-    <div style="margin-top: 50px; padding: 20px; text-align: center; 
-                color: #6b7280; border-top: 1px solid #e5e7eb;">
-        <p style="margin: 0; font-size: 0.9em;">
-            📧 Pentru întrebări sau sugestii, contactați dezvoltatorul aplicației
-        </p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2464,34 +2510,34 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    st.sidebar.title("📊 Navigare")
+    st.sidebar.title("Navigare")
     st.sidebar.markdown("---")
     
-    # Meniul de optiuni din sidebar cu pagina principala
+    # Meniul de optiuni din sidebar - design profesional fără emoji
     optiune = st.sidebar.radio(
         "Alege secțiunea:",
         (
-            "🏠 Pagina principală",
-            "📈 Evoluție rată șomaj",
-            "💰 Evoluție PIB", 
-            "🗺️ Hartă termică șomaj",
-            "📊 Comparație rată șomaj",
-            "👥 Salariați pe activități (bare)",
-            "🥧 Salariați pe activități (circulare)",
-            "🔗 Corelație șomaj-ocupare",
-            "🎓 Structura absolvenți",
-            "📋 Statistici descriptive",
-            "🗺️ Analiză spațială",
-            "🏛️ Sectorul public vs privat",
-            "📈 Regresie multiplă"
+            "Pagina principală",
+            "Evoluție rată șomaj",
+            "Evoluție PIB", 
+            "Hartă termică șomaj",
+            "Comparație rată șomaj",
+            "Salariați pe activități (bare)",
+            "Salariați pe activități (circulare)",
+            "Corelogramă șomaj-ocupare",
+            "Structura absolvenți",
+            "Statistici descriptive",
+            "Analiză spațială",
+            "Sectorul public vs privat",
+            "Regresie multiplă"
         ),
-        index=0  # Pagina principala este implicita
+        index=0
     )
     
-    if optiune == "🏠 Pagina principală":
+    if optiune == "Pagina principală":
         pagina_principala()
         
-    elif optiune == "📈 Evoluție rată șomaj":
+    elif optiune == "Evoluție rată șomaj":
         st.header("Evolutia ratei somajului in regiunea Centru (grafic cu linii)")
         st.info("Acest grafic arata evolutia ratei somajului in timp pentru fiecare judet din regiunea Centru. "
                 "Linia alba punctata reprezinta media nationala.")
@@ -2504,10 +2550,10 @@ def main():
                                                 (df['Judete'].str.upper() == 'TOTAL'))]
         grafic_linie_somaj(df_filtrat, ani, "Evolutia ratei somajului", "Rata somaj (%)")
 
-    elif optiune == "💰 Evoluție PIB":
+    elif optiune == "Evoluție PIB":
         analiza_pib_evolutie()
 
-    elif optiune == "🗺️ Hartă termică șomaj":
+    elif optiune == "Hartă termică șomaj":
         st.header("Comparatie rata somajului pe judete si ani (harta termica)")
         st.info("Harta termica permite compararea rapida a ratei somajului intre judete si ani.")
         df = incarca_date('Somaj')
@@ -2519,7 +2565,7 @@ def main():
                                         (df['Judete'].str.upper() == 'TOTAL'))]
         heatmap_judete_ani_interactiv(df, ani, "Harta termica rata somajului pe judete si ani")
 
-    elif optiune == "📊 Comparație rată șomaj":
+    elif optiune == "Comparație rată șomaj":
         st.header("Top judete dupa rata somajului (grafic cu bare)")
         st.info("Acest grafic arata comparatia ratei somajului intre judete pentru anul selectat.")
         df = incarca_date('Somaj')
@@ -2532,7 +2578,7 @@ def main():
                                         (df['Judete'].str.upper() == 'TOTAL'))]
         bar_chart_an_interactiv(df, an, f"Rata somajului pe judete in {an.split()[-1]}", "Rata somaj (%)")
 
-    elif optiune == "👥 Salariați pe activități (bare)":
+    elif optiune == "Salariați pe activități (bare)":
         st.header("Numar salariati pe activitati economice si judete (grafic cu bare)")
         st.info("Acest grafic arata distributia salariatilor pe activitati economice pentru fiecare judet.")
         df = incarca_date('Salariati2')
@@ -2543,7 +2589,7 @@ def main():
                 (df['Judete'].str.upper() == 'TOTAL')]
         bar_chart_salariati_activitati(df, ani, an)
 
-    elif optiune == "🥧 Salariați pe activități (circulare)":
+    elif optiune == "Salariați pe activități (circulare)":
         st.header("Structura salariatilor pe activitati economice (grafice circulare pe judete)")
         st.info("Fiecare grafic circular arata structura salariatilor pe activitati economice pentru un judet.")
         df = incarca_date('Salariati2')
@@ -2554,8 +2600,8 @@ def main():
                 (df['Judete'].str.upper() == 'TOTAL')]
         pie_charts_salariati_judete(df, ani, an)
 
-    elif optiune == "🔗 Corelație șomaj-ocupare":
-        st.header("Corelatie intre rata somajului si rata de ocupare a resurselor de munca (diagrama de dispersie)")
+    elif optiune == "Corelogramă șomaj-ocupare":
+        st.header("Corelatie intre rata somajului si rata de ocupare a resurselor de munca")
         st.info("Aceasta diagrama de dispersie arata relatia dintre rata somajului si rata de ocupare a resurselor de munca.")
         df_somaj = incarca_date('Somaj')
         df_resurse = incarca_date('Resurse')
@@ -2570,11 +2616,11 @@ def main():
         an = st.selectbox("An", ani, index=0)
         scatter_corelatie_interactiv(
             df_somaj, df_resurse, an,
-            f"Corelatie rata somaj - rata de ocupare ({an.split()[-1]})",
+            f"Corelograma rata somaj - rata de ocupare ({an.split()[-1]})",
             "Rata somaj (%)", "Rata de ocupare (%)"
         )
 
-    elif optiune == "🎓 Structura absolvenți":
+    elif optiune == "Structura absolvenți":
         st.header("Structura absolventilor pe niveluri de educatie (diagrama cu bare stivuite)")
         st.info("Aceasta diagrama cu bare stivuite arata structura absolventilor pe niveluri de educatie pentru judetul selectat.")
         df = filtreaza_regiunea_centru_si_romania(incarca_date('Absolventi'))
@@ -2583,16 +2629,16 @@ def main():
         judet = st.selectbox("Alege judetul", df['Judete'].unique())
         stacked_bar_absolventi_interactiv(df, ani, judet)
 
-    elif optiune == "📋 Statistici descriptive":
+    elif optiune == "Statistici descriptive":
         analiza_statistici_descriptive()
 
-    elif optiune == "🗺️ Analiză spațială":
+    elif optiune == "Analiză spațială":
         analiza_spatiala_choropleth()
 
-    elif optiune == "🏛️ Sectorul public vs privat":
+    elif optiune == "Sectorul public vs privat":
         analiza_spatiala_public_privat()
 
-    elif optiune == "📈 Regresie multiplă":
+    elif optiune == "Regresie multiplă":
         analiza_regresie_multipla()
 
 if __name__ == "__main__":
