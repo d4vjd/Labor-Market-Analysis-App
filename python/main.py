@@ -2264,34 +2264,234 @@ Rata\_somaj = \beta_0 + \beta_1 \cdot Absolventi\_totali^{(standardizat)} + \bet
         unsafe_allow_html=True
     )
 
+def pagina_principala():
+    # Pagina de landing cu descrierea aplicatiei si informatii generale
+    
+    # Header principal cu stil
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                padding: 40px; border-radius: 15px; margin-bottom: 30px; text-align: center;">
+        <h1 style="color: white; font-size: 3.5em; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+            📊 Analiza Pieței Muncii
+        </h1>
+        <h2 style="color: #f0f0f0; font-size: 1.8em; font-weight: 300; margin-bottom: 0;">
+            Regiunea Centru - România
+        </h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Sectiune descriere aplicatie
+    st.markdown("""
+    <div style="background-color: #f8f9fa; padding: 30px; border-radius: 12px; margin-bottom: 25px; 
+                border-left: 5px solid #007bff;">
+        <h3 style="color: #2c3e50; margin-bottom: 20px;">🎯 Despre această aplicație</h3>
+        <p style="font-size: 1.1em; line-height: 1.8; color: #495057; text-align: justify;">
+            Această aplicație oferă o analiză comprehensivă a indicatorilor pieței muncii din 
+            <strong>Regiunea Centru a României</strong>, care include județele: <strong>Alba, Brașov, Covasna, 
+            Harghita, Mureș și Sibiu</strong>. Prin intermediul unor vizualizări interactive și analize 
+            statistice avansate, utilizatorii pot explora evoluția în timp a diferitelor metrici economice 
+            și demografice.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Sectiune caracteristici principale
+    st.markdown("""
+    <div style="margin-bottom: 30px;">
+        <h3 style="color: #2c3e50; text-align: center; margin-bottom: 30px;">
+            ⭐ Caracteristicile principale
+        </h3>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Grid cu caracteristici
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); 
+                    padding: 25px; border-radius: 12px; text-align: center; height: 200px; 
+                    display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 3em; margin-bottom: 15px;">📈</div>
+            <h4 style="color: white; margin-bottom: 10px;">Analize temporale</h4>
+            <p style="color: #f8f9fa; font-size: 0.9em;">
+                Urmărirea evoluției indicatorilor în timp prin grafice interactive
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #4ecdc4, #20bf6b); 
+                    padding: 25px; border-radius: 12px; text-align: center; height: 200px;
+                    display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 3em; margin-bottom: 15px;">🗺️</div>
+            <h4 style="color: white; margin-bottom: 10px;">Analize spațiale</h4>
+            <p style="color: #f8f9fa; font-size: 0.9em;">
+                Vizualizări pe hartă pentru comparații între județe
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #a55eea, #8854d0); 
+                    padding: 25px; border-radius: 12px; text-align: center; height: 200px;
+                    display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 3em; margin-bottom: 15px;">📊</div>
+            <h4 style="color: white; margin-bottom: 10px;">Statistici avansate</h4>
+            <p style="color: #f8f9fa; font-size: 0.9em;">
+                Analize de corelație și modele de regresie multiplă
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Sectiune indicatori disponibili
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div style="background-color: #e8f4fd; padding: 25px; border-radius: 12px; height: 280px;">
+            <h4 style="color: #1e3a8a; margin-bottom: 20px;">📋 Indicatori disponibili</h4>
+            <ul style="color: #1e40af; line-height: 1.8; font-size: 0.95em;">
+                <li><strong>Piața muncii:</strong> Rata șomajului, rata de ocupare</li>
+                <li><strong>Populația:</strong> Populația activă, imigranți definitivi</li>
+                <li><strong>Educația:</strong> Numărul absolvenților pe niveluri</li>
+                <li><strong>Economia:</strong> PIB regional pe locuitor</li>
+                <li><strong>Salarii:</strong> Câștigul salarial mediu net</li>
+                <li><strong>Sectoare:</strong> Salariați pe activități economice</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="background-color: #f0f9ff; padding: 25px; border-radius: 12px; height: 280px;">
+            <h4 style="color: #1e3a8a; margin-bottom: 20px;">🛠️ Tipuri de analiză</h4>
+            <ul style="color: #1e40af; line-height: 1.8; font-size: 0.95em;">
+                <li><strong>Grafice de evoluție</strong> în timp</li>
+                <li><strong>Hărți coroplete</strong> interactive</li>
+                <li><strong>Hărți termice</strong> pentru comparații</li>
+                <li><strong>Grafice circulare</strong> pentru structuri</li>
+                <li><strong>Diagrame de dispersie</strong> pentru corelații</li>
+                <li><strong>Statistici descriptive</strong> și teste</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Sectiune sursa datelor
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #ffeaa7, #fdcb6e); 
+                padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center;">
+        <h3 style="color: #2d3436; margin-bottom: 20px;">📊 Sursa datelor</h3>
+        <p style="color: #2d3436; font-size: 1.2em; margin-bottom: 15px;">
+            <strong>Institutul Național de Statistică (INS)</strong>
+        </p>
+        <p style="color: #636e72; font-size: 1em; margin-bottom: 10px;">
+            Datele sunt preluate prin intermediul platformei
+        </p>
+        <p style="color: #2d3436; font-size: 1.3em; font-weight: bold;">
+            🌐 TEMPO Online
+        </p>
+        <p style="color: #636e72; font-size: 0.9em; font-style: italic;">
+            Baza de date statistice a României - tempo-online.ro
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Sectiune perioada de acoperire
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("""
+        <div style="background-color: #ddd6fe; padding: 20px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 2.5em; margin-bottom: 10px;">📅</div>
+            <h4 style="color: #5b21b6; margin-bottom: 5px;">Perioada</h4>
+            <p style="color: #7c3aed; font-weight: bold;">2010 - 2023</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="background-color: #fecaca; padding: 20px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 2.5em; margin-bottom: 10px;">🏛️</div>
+            <h4 style="color: #b91c1c; margin-bottom: 5px;">Județe</h4>
+            <p style="color: #dc2626; font-weight: bold;">6 județe</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div style="background-color: #bbf7d0; padding: 20px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 2.5em; margin-bottom: 10px;">📈</div>
+            <h4 style="color: #15803d; margin-bottom: 5px;">Indicatori</h4>
+            <p style="color: #16a34a; font-weight: bold;">10+ metrici</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Sectiune instructiuni de utilizare
+    st.markdown("""
+    <div style="background-color: #f1f5f9; padding: 25px; border-radius: 12px; margin-top: 30px; 
+                border: 2px solid #e2e8f0;">
+        <h3 style="color: #1e293b; margin-bottom: 20px;">🚀 Cum să utilizezi aplicația</h3>
+        <div style="color: #475569; font-size: 1.05em; line-height: 1.7;">
+            <p><strong>1.</strong> Selectează tipul de analiză dorită din <strong>meniul din stânga</strong></p>
+            <p><strong>2.</strong> Configurează parametrii (anul, sexul, județul) folosind controalele interactive</p>
+            <p><strong>3.</strong> Explorează graficele și tabelele generate automat</p>
+            <p><strong>4.</strong> Descarcă sau salvează rezultatele pentru utilizare ulterioară</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Footer
+    st.markdown("""
+    <div style="margin-top: 50px; padding: 20px; text-align: center; 
+                color: #6b7280; border-top: 1px solid #e5e7eb;">
+        <p style="margin: 0; font-size: 0.9em;">
+            📧 Pentru întrebări sau sugestii, contactați dezvoltatorul aplicației
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
 def main():
     # Titlul aplicatiei Streamlit
-    st.title("Analiza a pietei muncii - Regiunea Centru")
-    st.divider()
-    st.sidebar.title("Meniu analize")
-    # Meniul de optiuni din sidebar 
-    st.sidebar.markdown("## Meniu analize")
-    st.sidebar.markdown("---")
-    optiune = st.sidebar.radio(
-        "📊 Alege analiza:",
-        (
-            "Evolutie rata somaj (grafic cu linii)",
-            "Evolutie PIB (grafic cu linii)",
-            "Comparatie rata somaj (harta termica)",
-            "Judete dupa rata somaj (grafic cu bare)",
-            "Salariati pe activitati economice (grafic cu bare)",
-            "Salariati pe activitati economice (grafice circulare)",
-            "Corelatie rata somaj - ocupare (diagrama de dispersie)",
-            "Structura absolventi pe niveluri (diagrama cu bare stivuite)",
-            "Statistici descriptive",
-            "Analiza spatiala",
-            "Sectorul public vs privat",
-            "Regresie multipla"
-        ),
-        index=1  # Pozitie implicita
+    st.set_page_config(
+        page_title="Analiza Pieței Muncii - Regiunea Centru",
+        page_icon="📊",
+        layout="wide",
+        initial_sidebar_state="expanded"
     )
-
-    if optiune == "Evolutie rata somaj (grafic cu linii)":
+    
+    st.sidebar.title("📊 Navigare")
+    st.sidebar.markdown("---")
+    
+    # Meniul de optiuni din sidebar cu pagina principala
+    optiune = st.sidebar.radio(
+        "Alege secțiunea:",
+        (
+            "🏠 Pagina principală",
+            "📈 Evoluție rată șomaj",
+            "💰 Evoluție PIB", 
+            "🗺️ Hartă termică șomaj",
+            "📊 Comparație rată șomaj",
+            "👥 Salariați pe activități (bare)",
+            "🥧 Salariați pe activități (circulare)",
+            "🔗 Corelație șomaj-ocupare",
+            "🎓 Structura absolvenți",
+            "📋 Statistici descriptive",
+            "🗺️ Analiză spațială",
+            "🏛️ Sectorul public vs privat",
+            "📈 Regresie multiplă"
+        ),
+        index=0  # Pagina principala este implicita
+    )
+    
+    if optiune == "🏠 Pagina principală":
+        pagina_principala()
+        
+    elif optiune == "📈 Evoluție rată șomaj":
         st.header("Evolutia ratei somajului in regiunea Centru (grafic cu linii)")
         st.info("Acest grafic arata evolutia ratei somajului in timp pentru fiecare judet din regiunea Centru. "
                 "Linia alba punctata reprezinta media nationala.")
@@ -2304,10 +2504,10 @@ def main():
                                                 (df['Judete'].str.upper() == 'TOTAL'))]
         grafic_linie_somaj(df_filtrat, ani, "Evolutia ratei somajului", "Rata somaj (%)")
 
-    elif optiune == "Evolutie PIB (grafic cu linii)":
+    elif optiune == "💰 Evoluție PIB":
         analiza_pib_evolutie()
 
-    elif optiune == "Comparatie rata somaj (harta termica)":
+    elif optiune == "🗺️ Hartă termică șomaj":
         st.header("Comparatie rata somajului pe judete si ani (harta termica)")
         st.info("Harta termica permite compararea rapida a ratei somajului intre judete si ani.")
         df = incarca_date('Somaj')
@@ -2319,7 +2519,7 @@ def main():
                                         (df['Judete'].str.upper() == 'TOTAL'))]
         heatmap_judete_ani_interactiv(df, ani, "Harta termica rata somajului pe judete si ani")
 
-    elif optiune == "Judete dupa rata somaj (grafic cu bare)":
+    elif optiune == "📊 Comparație rată șomaj":
         st.header("Top judete dupa rata somajului (grafic cu bare)")
         st.info("Acest grafic arata comparatia ratei somajului intre judete pentru anul selectat.")
         df = incarca_date('Somaj')
@@ -2332,7 +2532,7 @@ def main():
                                         (df['Judete'].str.upper() == 'TOTAL'))]
         bar_chart_an_interactiv(df, an, f"Rata somajului pe judete in {an.split()[-1]}", "Rata somaj (%)")
 
-    elif optiune == "Salariati pe activitati economice (grafic cu bare)":
+    elif optiune == "👥 Salariați pe activități (bare)":
         st.header("Numar salariati pe activitati economice si judete (grafic cu bare)")
         st.info("Acest grafic arata distributia salariatilor pe activitati economice pentru fiecare judet.")
         df = incarca_date('Salariati2')
@@ -2343,7 +2543,7 @@ def main():
                 (df['Judete'].str.upper() == 'TOTAL')]
         bar_chart_salariati_activitati(df, ani, an)
 
-    elif optiune == "Salariati pe activitati economice (grafice circulare)":
+    elif optiune == "🥧 Salariați pe activități (circulare)":
         st.header("Structura salariatilor pe activitati economice (grafice circulare pe judete)")
         st.info("Fiecare grafic circular arata structura salariatilor pe activitati economice pentru un judet.")
         df = incarca_date('Salariati2')
@@ -2354,7 +2554,7 @@ def main():
                 (df['Judete'].str.upper() == 'TOTAL')]
         pie_charts_salariati_judete(df, ani, an)
 
-    elif optiune == "Corelatie rata somaj - ocupare (diagrama de dispersie)":
+    elif optiune == "🔗 Corelație șomaj-ocupare":
         st.header("Corelatie intre rata somajului si rata de ocupare a resurselor de munca (diagrama de dispersie)")
         st.info("Aceasta diagrama de dispersie arata relatia dintre rata somajului si rata de ocupare a resurselor de munca.")
         df_somaj = incarca_date('Somaj')
@@ -2374,7 +2574,7 @@ def main():
             "Rata somaj (%)", "Rata de ocupare (%)"
         )
 
-    elif optiune == "Structura absolventi pe niveluri (diagrama cu bare stivuite)":
+    elif optiune == "🎓 Structura absolvenți":
         st.header("Structura absolventilor pe niveluri de educatie (diagrama cu bare stivuite)")
         st.info("Aceasta diagrama cu bare stivuite arata structura absolventilor pe niveluri de educatie pentru judetul selectat.")
         df = filtreaza_regiunea_centru_si_romania(incarca_date('Absolventi'))
@@ -2383,16 +2583,16 @@ def main():
         judet = st.selectbox("Alege judetul", df['Judete'].unique())
         stacked_bar_absolventi_interactiv(df, ani, judet)
 
-    elif optiune == "Statistici descriptive":
+    elif optiune == "📋 Statistici descriptive":
         analiza_statistici_descriptive()
 
-    elif optiune == "Analiza spatiala":
+    elif optiune == "🗺️ Analiză spațială":
         analiza_spatiala_choropleth()
 
-    elif optiune == "Sectorul public vs privat":
+    elif optiune == "🏛️ Sectorul public vs privat":
         analiza_spatiala_public_privat()
 
-    elif optiune == "Regresie multipla":
+    elif optiune == "📈 Regresie multiplă":
         analiza_regresie_multipla()
 
 if __name__ == "__main__":
