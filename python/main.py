@@ -1494,18 +1494,46 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
     df_y = replace_total_with_romania(df_y)
     df_x = converteste_ani_la_float(df_x, [an])
     df_y = converteste_ani_la_float(df_y, [an])
-    judete_ord = ["Alba", "Brasov", "Covasna", "Harghita", "Mures", "Sibiu", "Romania"]
-    colors = [JUD_COLORS.get(j, "#888888") for j in judete_ord]
+    
+    # Definește județele din regiunea Centru
+    judete_centru = ["Alba", "Brasov", "Covasna", "Harghita", "Mures", "Sibiu"]
+    
+    # Toate celelalte județe (excluzând regiunea Centru și România)
+    judete_alte = [j for j in TOATE_JUDETELE if j not in judete_centru and j != "Romania"]
+    
     df_corel = pd.DataFrame({
         'Judet': df_x['Judete'],
         'Rata somaj': df_x[an],
         'Rata ocupare': df_y[an]
     })
+    
     fig = go.Figure()
-    for idx, jud in enumerate(judete_ord):
+    
+    # PRIMUL: Adaugă celelalte județe cu gri și opacitate redusă (să fie în spate)
+    for jud in judete_alte:
         row = df_corel[df_corel['Judet'] == jud]
         if not row.empty:
-            color = colors[idx]
+            fig.add_trace(go.Scatter(
+                x=row['Rata somaj'],
+                y=row['Rata ocupare'],
+                mode='markers+text',
+                name=jud,
+                text=[jud],
+                marker=dict(
+                    size=12, 
+                    color="rgba(128, 128, 128, 0.5)",  # Gri cu opacitate redusă
+                    line=dict(width=1, color="rgba(128, 128, 128, 0.7)")
+                ),
+                textfont=dict(size=10, color="rgba(128, 128, 128, 0.8)"),
+                textposition='top center',
+                showlegend=False  # Nu afișa în legendă pentru a nu aglomera
+            ))
+    
+    # AL DOILEA: Adaugă județele din regiunea Centru cu culorile specifice (să fie deasupra)
+    for jud in judete_centru:
+        row = df_corel[df_corel['Judet'] == jud]
+        if not row.empty:
+            color = JUD_COLORS.get(jud, "#888888")
             fig.add_trace(go.Scatter(
                 x=row['Rata somaj'],
                 y=row['Rata ocupare'],
@@ -1513,9 +1541,24 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
                 name=jud,
                 text=[jud],
                 marker=dict(size=18, color=color, line=dict(width=1.5, color="#222")),
-                textfont=dict(size=14, color=color if jud != "Romania" else "#222"),
+                textfont=dict(size=14, color=color),
                 textposition='top center'
             ))
+    
+    # AL TREILEA: Adaugă România cu culoarea și textul specific (să fie cel mai sus)
+    row_romania = df_corel[df_corel['Judet'] == "Romania"]
+    if not row_romania.empty:
+        fig.add_trace(go.Scatter(
+            x=row_romania['Rata somaj'],
+            y=row_romania['Rata ocupare'],
+            mode='markers+text',
+            name="Romania",
+            text=["Romania"],
+            marker=dict(size=20, color="#FFFFFF", line=dict(width=2, color="#222")),
+            textfont=dict(size=14, color="#FFFFFF"),  # Text alb pentru România
+            textposition='top center'
+        ))
+    
     fig.update_layout(
         width=1000, height=650,
         font=dict(family="Segoe UI, Arial", size=16),
@@ -1524,9 +1567,12 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
         title=dict(text=titlu, font=dict(size=26)),
         legend=dict(font=dict(size=14))
     )
+    
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown("#### Tabel cu datele")
-    st.dataframe(df_corel.set_index('Judet'))
+    st.markdown("#### Tabel cu datele pentru regiunea Centru și România")
+    # Afișează doar datele pentru regiunea Centru și România în tabel
+    df_display = df_corel[df_corel['Judet'].isin(judete_centru + ["Romania"])]
+    st.dataframe(df_display.set_index('Judet'))
     st.divider()
 
 def bar_chart_salariati_activitati(df, ani, an_selectat):
@@ -2444,7 +2490,7 @@ def pagina_principala():
                     <span style="color: #9d174d; margin-left: 8px;">pentru structuri</span>
                 </div>
                 <div style="margin-bottom: 18px; padding: 12px; background: #ede9fe; border-radius: 10px;">
-                    <span style="color: #7c3aed; font-weight: 600;">📈 Corelograme</span>
+                    <span style="color: #7c3aed; font-weight: 600;">📈 Diagrame de dispersie</span>
                     <span style="color: #6d28d9; margin-left: 8px;">pentru corelații</span>
                 </div>
                 <div style="margin-bottom: 0; padding: 12px; background: #f0fdfa; border-radius: 10px;">
@@ -2524,7 +2570,7 @@ def main():
             "Comparație rată șomaj",
             "Salariați pe activități (bare)",
             "Salariați pe activități (circulare)",
-            "Corelogramă șomaj-ocupare",
+            "Corelație șomaj-ocupare",
             "Structura absolvenți",
             "Statistici descriptive",
             "Analiză spațială",
@@ -2600,25 +2646,26 @@ def main():
                 (df['Judete'].str.upper() == 'TOTAL')]
         pie_charts_salariati_judete(df, ani, an)
 
-    elif optiune == "Corelogramă șomaj-ocupare":
+    elif optiune == "Corelație șomaj-ocupare":
         st.header("Corelatie intre rata somajului si rata de ocupare a resurselor de munca")
-        st.info("Aceasta diagrama de dispersie arata relatia dintre rata somajului si rata de ocupare a resurselor de munca.")
+        st.info("Aceasta diagrama de dispersie arata relatia dintre rata somajului si rata de ocupare a resurselor de munca. "
+            "Județele din regiunea Centru sunt evidențiate cu culori distinctive, celelalte județe sunt afișate în gri.")
         df_somaj = incarca_date('Somaj')
         df_resurse = incarca_date('Resurse')
         ani = sorted([col for col in df_somaj.columns if col.startswith('Anul')],
-                     key=lambda x: int(x.split()[-1]), reverse=True)
+                 key=lambda x: int(x.split()[-1]), reverse=True)
         sex = st.selectbox("Sex", df_somaj['Sexe'].unique())
-        df_somaj = df_somaj[(df_somaj['Sexe'] == sex) & ((df_somaj['Judete'].isin(['Alba', 'Brasov', 'Covasna',
-                                                                                     'Harghita', 'Mures', 'Sibiu'])) |
-                                                           (df_somaj['Judete'].str.upper() == 'TOTAL'))]
-        df_resurse = df_resurse[(df_resurse['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu'])) |
-                                (df_resurse['Judete'].str.upper() == 'TOTAL')]
+    
+        # Include toate județele, nu doar regiunea Centru
+        df_somaj = df_somaj[(df_somaj['Sexe'] == sex)]
+        df_resurse = replace_total_with_romania(df_resurse)
+    
         an = st.selectbox("An", ani, index=0)
         scatter_corelatie_interactiv(
-            df_somaj, df_resurse, an,
-            f"Corelograma rata somaj - rata de ocupare ({an.split()[-1]})",
-            "Rata somaj (%)", "Rata de ocupare (%)"
-        )
+        df_somaj, df_resurse, an,
+        f"Corelație rata somaj - rata de ocupare ({an.split()[-1]})",
+        "Rata somaj (%)", "Rata de ocupare (%)"
+    )
 
     elif optiune == "Structura absolvenți":
         st.header("Structura absolventilor pe niveluri de educatie (diagrama cu bare stivuite)")
