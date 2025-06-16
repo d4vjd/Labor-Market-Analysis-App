@@ -116,6 +116,26 @@ TOATE_JUDETELE = [
     'Valcea', 'Vaslui', 'Vrancea', 'Municipiul Bucuresti'
 ]
 
+# Coordonatele ajustate ale centrelor judetelor din regiunea Centru
+COORDONATE_JUDETE = {
+    'Alba': (46.0667, 23.5833),
+    'Brasov': (45.6500, 25.6000),
+    'Covasna': (45.8667, 26.1833),
+    'Harghita': (46.3600, 25.8000),
+    'Mures': (46.5500, 24.5667),
+    'Sibiu': (45.7833, 24.1500)
+}
+
+# Prescurtari pentru judete conform sistemului auto din Romania
+PRESCURTARI_JUDETE = {
+    'Alba': 'AB',
+    'Brasov': 'BV', 
+    'Covasna': 'CV',
+    'Harghita': 'HR',
+    'Mures': 'MS',
+    'Sibiu': 'SB'
+}
+
 def standardizeaza_nume_judete(nume_judet):
     # Standardizeaza numele judetelor pentru mapare
     for standard, variante in MAPARE_JUDETE.items():
@@ -220,6 +240,25 @@ def choropleth_pib(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
+    # Coordonatele și prescurtările județelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -234,6 +273,28 @@ def choropleth_pib(geo_data, geo_type):
             color_continuous_scale="PuRd",
             title=f"PIB regional pe locuitor in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
+
+        # Adauga labeluri DOAR pentru regiunea Centru
+        if doar_centru:
+            for _, row in df_filtrat.iterrows():
+                if row['Judete'] in coordonate_judete and row['Judete'] in prescurtari_judete:
+                    lat, lon = coordonate_judete[row['Judete']]
+                    prescurtare = prescurtari_judete[row['Judete']]
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[prescurtare],
+                        mode='text',
+                        textfont=dict(
+                            size=14,
+                            color="black",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
 
     fig.update_geos(
         fitbounds="locations",
@@ -274,6 +335,25 @@ def choropleth_salariu_mediu(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
+    # Coordonatele și prescurtările județelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -288,6 +368,28 @@ def choropleth_salariu_mediu(geo_data, geo_type):
             color_continuous_scale="amp",
             title=f"Castigul salarial mediu net ({sex}) in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
+
+        # Adauga labeluri DOAR pentru regiunea Centru
+        if doar_centru:
+            for _, row in df_filtrat.iterrows():
+                if row['Judete'] in coordonate_judete and row['Judete'] in prescurtari_judete:
+                    lat, lon = coordonate_judete[row['Judete']]
+                    prescurtare = prescurtari_judete[row['Judete']]
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[prescurtare],
+                        mode='text',
+                        textfont=dict(
+                            size=14,
+                            color="black",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
 
     fig.update_geos(
         fitbounds="locations",
@@ -326,6 +428,25 @@ def choropleth_imigranti(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
+    # Coordonatele și prescurtările județelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -340,6 +461,28 @@ def choropleth_imigranti(geo_data, geo_type):
             color_continuous_scale="Teal",
             title=f"Imigranti definitivi in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
+
+        # Adauga labeluri DOAR pentru regiunea Centru
+        if doar_centru:
+            for _, row in df_filtrat.iterrows():
+                if row['Judete'] in coordonate_judete and row['Judete'] in prescurtari_judete:
+                    lat, lon = coordonate_judete[row['Judete']]
+                    prescurtare = prescurtari_judete[row['Judete']]
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[prescurtare],
+                        mode='text',
+                        textfont=dict(
+                            size=14,
+                            color="black",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
 
     fig.update_geos(
         fitbounds="locations",
@@ -382,6 +525,25 @@ def choropleth_rata_somaj(geo_data, geo_type):
     # Standardizeaza numele judetelor
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
+    # Coordonatele și prescurtările județelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -397,18 +559,40 @@ def choropleth_rata_somaj(geo_data, geo_type):
             title=f"Rata somajului ({sex}) in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
 
+        # Adauga labeluri DOAR pentru regiunea Centru
+        if doar_centru:
+            for _, row in df_filtrat.iterrows():
+                if row['Judete'] in coordonate_judete and row['Judete'] in prescurtari_judete:
+                    lat, lon = coordonate_judete[row['Judete']]
+                    prescurtare = prescurtari_judete[row['Judete']]
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[prescurtare],
+                        mode='text',
+                        textfont=dict(
+                            size=14,
+                            color="black",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
+
     fig.update_geos(
         fitbounds="locations",
         visible=False,
-        bgcolor="rgba(0,0,0,0)"  # Background transparent
+        bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
-        width=1200,  # Am mărit lățimea hărții
-        height=800,  # Am mărit înălțimea hărții
+        width=1200,
+        height=800,
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Rata somaj (%)"),
-        paper_bgcolor="rgba(0,0,0,0)",  # Background transparent pentru paper
-        plot_bgcolor="rgba(0,0,0,0)"    # Background transparent pentru plot
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -435,6 +619,25 @@ def choropleth_rata_ocupare(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
+    # Coordonatele și prescurtările județelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -450,14 +653,36 @@ def choropleth_rata_ocupare(geo_data, geo_type):
             title=f"Rata de ocupare a resurselor de munca in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
 
+        # Adauga labeluri DOAR pentru regiunea Centru
+        if doar_centru:
+            for _, row in df_filtrat.iterrows():
+                if row['Judete'] in coordonate_judete and row['Judete'] in prescurtari_judete:
+                    lat, lon = coordonate_judete[row['Judete']]
+                    prescurtare = prescurtari_judete[row['Judete']]
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[prescurtare],
+                        mode='text',
+                        textfont=dict(
+                            size=14,
+                            color="black",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
+
     fig.update_geos(
         fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
-        width=1200,  # Mărim lățimea hărții
-        height=800,  # Mărim înălțimea hărții
+        width=1200,
+        height=800,
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Rata ocupare (%)"),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -489,6 +714,25 @@ def choropleth_populatie_activa(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
+    # Coordonatele și prescurtările județelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -504,14 +748,36 @@ def choropleth_populatie_activa(geo_data, geo_type):
             title=f"Populatia activa ({sex}) in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
 
+        # Adauga labeluri DOAR pentru regiunea Centru
+        if doar_centru:
+            for _, row in df_filtrat.iterrows():
+                if row['Judete'] in coordonate_judete and row['Judete'] in prescurtari_judete:
+                    lat, lon = coordonate_judete[row['Judete']]
+                    prescurtare = prescurtari_judete[row['Judete']]
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[prescurtare],
+                        mode='text',
+                        textfont=dict(
+                            size=14,
+                            color="black",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
+
     fig.update_geos(
         fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
-        width=1200,  # Mărim lățimea hărții
-        height=800,  # Mărim înălțimea hărții
+        width=1200,
+        height=800,
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Populatie activa (mii persoane)"),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -542,6 +808,25 @@ def choropleth_absolventi(geo_data, geo_type):
     df_total = df_filtrat.groupby('Judete')[an].sum().reset_index()
     df_total['Judete_std'] = df_total['Judete'].apply(standardizeaza_nume_judete)
 
+    # Coordonatele și prescurtările județelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -557,14 +842,36 @@ def choropleth_absolventi(geo_data, geo_type):
             title=f"Numarul total de absolventi in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
 
+        # Adauga labeluri DOAR pentru regiunea Centru
+        if doar_centru:
+            for _, row in df_total.iterrows():
+                if row['Judete'] in coordonate_judete and row['Judete'] in prescurtari_judete:
+                    lat, lon = coordonate_judete[row['Judete']]
+                    prescurtare = prescurtari_judete[row['Judete']]
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[prescurtare],
+                        mode='text',
+                        textfont=dict(
+                            size=14,
+                            color="black",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
+
     fig.update_geos(
         fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
-        width=1200,  # Mărim lățimea hărții
-        height=800,  # Mărim înălțimea hărții
+        width=1200,
+        height=800,
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Numar absolventi"),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -598,6 +905,25 @@ def choropleth_salariati_total(geo_data, geo_type):
     # Converteste la mii pentru afisare
     df_total[f'{an}_mii'] = df_total[an] / 1000
 
+    # Coordonatele și prescurtările județelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -613,14 +939,36 @@ def choropleth_salariati_total(geo_data, geo_type):
             title=f"Numarul total de salariati in anul {an.split()[-1]} - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
 
+        # Adauga labeluri DOAR pentru regiunea Centru
+        if doar_centru:
+            for _, row in df_total.iterrows():
+                if row['Judete'] in coordonate_judete and row['Judete'] in prescurtari_judete:
+                    lat, lon = coordonate_judete[row['Judete']]
+                    prescurtare = prescurtari_judete[row['Judete']]
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[prescurtare],
+                        mode='text',
+                        textfont=dict(
+                            size=14,
+                            color="black",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
+
     fig.update_geos(
         fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
-        width=1200,  # Mărim lățimea hărții
-        height=800,  # Mărim înălțimea hărții
+        width=1200,
+        height=800,
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Numar salariati (mii)"),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -657,6 +1005,25 @@ def choropleth_salariati_activitati(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
+    # Coordonatele și prescurtările județelor din regiunea Centru
+    coordonate_judete = {
+        'Alba': (46.0667, 23.5833),
+        'Brasov': (45.6500, 25.6000),
+        'Covasna': (45.8667, 26.1833),
+        'Harghita': (46.3600, 25.8000),
+        'Mures': (46.5500, 24.5667),
+        'Sibiu': (45.7833, 24.1500)
+    }
+    
+    prescurtari_judete = {
+        'Alba': 'AB',
+        'Brasov': 'BV', 
+        'Covasna': 'CV',
+        'Harghita': 'HR',
+        'Mures': 'MS',
+        'Sibiu': 'SB'
+    }
+
     # Creeaza harta cu Plotly
     if geo_type == 'geojson':
         fig = px.choropleth(
@@ -672,14 +1039,36 @@ def choropleth_salariati_activitati(geo_data, geo_type):
             title=f"Salariati in {activitate} ({an.split()[-1]}) - {'Regiunea Centru' if doar_centru else 'Romania'}"
         )
 
+        # Adauga labeluri DOAR pentru regiunea Centru
+        if doar_centru:
+            for _, row in df_filtrat.iterrows():
+                if row['Judete'] in coordonate_judete and row['Judete'] in prescurtari_judete:
+                    lat, lon = coordonate_judete[row['Judete']]
+                    prescurtare = prescurtari_judete[row['Judete']]
+                    
+                    fig.add_scattergeo(
+                        lat=[lat],
+                        lon=[lon],
+                        text=[prescurtare],
+                        mode='text',
+                        textfont=dict(
+                            size=14,
+                            color="black",
+                            family="Arial Black"
+                        ),
+                        textposition='middle center',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    )
+
     fig.update_geos(
         fitbounds="locations",
         visible=False,
         bgcolor="rgba(0,0,0,0)"
     )
     fig.update_layout(
-        width=1200,  # Mărim lățimea hărții
-        height=800,  # Mărim înălțimea hărții
+        width=1200,
+        height=800,
         title=dict(font=dict(size=20)),
         coloraxis_colorbar=dict(title="Numar salariati"),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -2547,6 +2936,96 @@ def pagina_principala():
     </div>
     """, unsafe_allow_html=True)
 
+def analiza_absolventi_evolutie():
+    # Analiza evolutiei numarului total de absolventi
+    st.header("Evolutia numarului total de absolventi")
+    st.info("Acest grafic arata evolutia numarului total de absolventi in timp pentru fiecare judet din regiunea Centru. "
+            "Linia alba punctata reprezinta media pe judete din regiunea Centru.")
+    
+    df = incarca_date('Absolventi')
+    ani = sorted([col for col in df.columns if col.startswith('Anul')],
+                 key=lambda x: int(x.split()[-1]), reverse=True)
+    
+    # Filtreaza DOAR judetele din regiunea Centru (fara Romania)
+    df_filtrat = df[df['Judete'].isin(['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu'])]
+    
+    # Converteste la float pentru calculele numerice
+    df_filtrat = converteste_ani_la_float(df_filtrat, ani)
+    
+    # Calculeaza totalul de absolventi pe judete (suma tuturor nivelurilor de educatie)
+    df_total = df_filtrat.groupby('Judete')[ani].sum().reset_index()
+    
+    # Calculeaza media pe judete pentru fiecare an pentru a obtine valoarea pentru Romania
+    media_pe_ani = {}
+    for an in ani:
+        media_pe_ani[an] = df_total[an].mean()
+    
+    # Creaza o inregistrare pentru Romania cu mediile calculate
+    df_romania = pd.DataFrame([{'Judete': 'Romania', **media_pe_ani}])
+    
+    # Combina datele judetelor cu Romania
+    df_final = pd.concat([df_total, df_romania], ignore_index=True)
+    
+    grafic_linie_absolventi(df_final, ani, "Evolutia numarului total de absolventi", "Numar absolventi")
+
+def grafic_linie_absolventi(df, ani, titlu, ylabel):
+    # Creaza grafic linie pentru evolutia numarului de absolventi pe judete
+    st.divider()
+    ani_num = extrage_ani(ani)
+    df = converteste_ani_la_float(df, ani)
+    df_judete = df[df['Judete'] != 'Romania']
+    
+    fig = go.Figure()
+    for idx, row in df_judete.iterrows():
+        color = JUD_COLORS.get(row['Judete'], PALETA[idx % len(PALETA)])
+        fig.add_trace(go.Scatter(
+            x=ani_num,
+            y=[row[an] for an in ani],
+            mode='lines+markers',
+            name=row['Judete'],
+            text=[f"{row['Judete']}<br>{an}: {row[an]:.0f} absolventi" for an in ani],
+            hoverinfo='text+y',
+            line=dict(width=3, color=color),
+            marker=dict(size=10, line=dict(width=1.5, color="#222"), color=color)
+        ))
+    
+    # Adauga linia pentru media pe judete (Romania)
+    df_romania = df[df['Judete'] == 'Romania']
+    if not df_romania.empty:
+        row = df_romania.iloc[0]
+        fig.add_trace(go.Scatter(
+            x=ani_num,
+            y=[row[an] for an in ani],
+            mode='lines+markers',
+            name="Media pe judete",
+            text=[f"Media pe judete<br>{an}: {row[an]:.0f} absolventi" for an in ani],
+            hoverinfo='text+y',
+            line=dict(width=5, color="#FFFFFF", dash='dot'),
+            marker=dict(size=12, color="#FFFFFF", line=dict(width=2, color='black'))
+        ))
+    
+    # Configurare aspect grafic
+    fig.update_layout(
+        width=1000, height=650,
+        font=dict(family="Segoe UI, Arial", size=16),
+        title=dict(text=titlu, font=dict(size=26)),
+        xaxis_title=dict(text="Anul", font=dict(size=18)),
+        yaxis_title=dict(text=ylabel, font=dict(size=18)),
+        yaxis=dict(tickfont=dict(size=14)),
+        xaxis=dict(tickfont=dict(size=14)),
+        legend_title=dict(text="Judet", font=dict(size=16)),
+        legend=dict(font=dict(size=14)),
+        hovermode="x unified"
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("#### Tabel cu datele")
+    # Renumeste Romania la Media pe judete pentru claritate in tabel
+    df_display = df.copy()
+    df_display.loc[df_display['Judete'] == 'Romania', 'Judete'] = 'Media pe judete'
+    st.dataframe(df_display.set_index('Judete')[ani])
+    st.divider()
+
 def main():
     # Titlul aplicatiei Streamlit
     st.set_page_config(
@@ -2565,7 +3044,8 @@ def main():
         (
             "Pagina principală",
             "Evoluție rată șomaj",
-            "Evoluție PIB", 
+            "Evoluție PIB",
+            "Evoluție absolvenți", 
             "Hartă termică șomaj",
             "Comparație rată șomaj",
             "Salariați pe activități (bare)",
@@ -2598,6 +3078,9 @@ def main():
 
     elif optiune == "Evoluție PIB":
         analiza_pib_evolutie()
+
+    elif optiune == "Evoluție absolvenți":
+        analiza_absolventi_evolutie()
 
     elif optiune == "Hartă termică șomaj":
         st.header("Comparatie rata somajului pe judete si ani (harta termica)")
