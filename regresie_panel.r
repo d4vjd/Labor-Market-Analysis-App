@@ -76,7 +76,7 @@ panel_data <- salariu_panel %>%
 panel_data <- panel_data[complete.cases(panel_data), ]
 
 # STANDARDIZAREA DATELOR
-cat("Standardizarea datelor...\n")
+cat("Standardizarea datelor folosind functia scale()...\n")
 non_numeric_vars <- c("Judete", "An")
 numeric_vars <- setdiff(names(panel_data), non_numeric_vars)
 
