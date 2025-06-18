@@ -2543,161 +2543,150 @@ def analiza_spatiala_public_privat():
     # Afiseaza pie chart cu distributia generala
     pie_chart_public_privat(df_analiza, an, doar_centru)
 
-def analiza_regresie_multipla():
-    # Sectiune care realizeaza regresia multipla: rata somaj ~ absolventi + populatie activa
-    st.header("Regresie multipla: rata somajului ~ absolventi + populatie activa")
+def analiza_regresie():
+    # Analiza de regresie pentru date de tip panel realizata in R
+    st.header("Analiza de regresie pentru date de tip panel")
     st.info(
-        "Aceasta analiza construieste un model de regresie multipla pentru rata somajului, "
-        "folosind ca variabile independente numarul total de absolventi si populatia activa, "
-        "pentru fiecare judet din regiunea Centru si pentru Romania."
+        "Această analiză de regresie pentru date de tip panel a fost realizată în R, "
+        "folosind datele economice și demografice din Regiunea Centru a României. "
+        "Datele au fost standardizate folosind funcția scale() din R."
     )
+    
+    # Explicația despre metodologia folosită
+    st.markdown("#### Metodologia analizei")
+    st.markdown("""
+    **Selecția variabilelor:** Variabilele au fost alese în funcție de matricea de corelație 
+    care a fost creată cu ajutorul unui script în R. Matricea de corelație a evidențiat 
+    relațiile semnificative între variabilele economice și demografice.
+    
+    **Compararea modelelor:** Modelele au fost comparate folosind:
+    - **Hausman Test** pentru alegerea între Fixed Effects și Random Effects
+    - **Compararea R-squared** pentru evaluarea puterii explicative a modelelor
+    
+    **Standardizarea datelor:** Toate variabilele au fost standardizate folosind funcția `scale()` 
+    din R pentru a permite compararea directă a coeficienților.
+    """)
+    
+    # Afișarea matricei de corelație
+    st.markdown("#### Matricea de corelație")
+    st.markdown("Matricea de corelație utilizată pentru selecția variabilelor:")
+    
+    try:
+        from PIL import Image
+        image = Image.open('matrice_corelatie.png')
+        st.image(image, caption='Matricea de corelație între variabilele economice și demografice', 
+                width=600)
+    except:
+        st.error("Nu s-a putut încărca imaginea cu matricea de corelație (matrice_corelatie.png)")
+    
+    st.markdown("---")
+    
+    # Rezultatele analizei din R
+    st.markdown("#### Rezultatele analizei de regresie")
+    st.markdown("Rezultatele obținute din analiza efectuată în R:")
+    
+    # Afișarea rezultatelor formatate
+    st.code("""
+=== MODELUL 1: FIXED EFFECTS ===
+Oneway (individual) effect Within Model
 
-    # Incarca datele din tabelele relevante
-    df_somaj = incarca_date('Somaj')
-    df_absolventi = incarca_date('Absolventi')
-    df_popactiva = incarca_date('PopActiva')
+Call:
+plm(formula = Salariu ~ Imigranti + Rata_Somaj + Rata_Ocupare + 
+    Pop_Activa, data = panel_pdata, model = "within")
 
-    # Inlocuieste valorile TOTAL cu Romania pentru consistenta
-    df_somaj = replace_total_with_romania(df_somaj)
-    df_absolventi = replace_total_with_romania(df_absolventi)
-    df_popactiva = replace_total_with_romania(df_popactiva)
+Balanced Panel: n = 42, T = 13, N = 546
 
-    # Selecteaza anii disponibili in toate tabelele
-    ani_somaj = [col for col in df_somaj.columns if col.startswith('Anul')]
-    ani_absolventi = [col for col in df_absolventi.columns if col.startswith('Anul')]
-    ani_popactiva = [col for col in df_popactiva.columns if col.startswith('Anul')]
-    ani_comuni = sorted(
-        list(set(ani_somaj) & set(ani_absolventi) & set(ani_popactiva)),
-        key=lambda x: int(x.split()[-1]),
-        reverse=True
-    )
+Residuals:
+     Min.   1st Qu.    Median   3rd Qu.      Max. 
+-1.548817 -0.394844 -0.084152  0.331147  2.691460 
 
-    # Selecteaza sexul si anul pentru analiza
-    sex = st.selectbox("Alege sexul", df_somaj['Sexe'].unique())
-    an = st.selectbox("Alege anul", ani_comuni, index=0)
+Coefficients:
+              Estimate Std. Error  t-value  Pr(>|t|)    
+Imigranti     0.276490   0.046662   5.9253 5.808e-09 ***
+Rata_Somaj   -1.112099   0.054922 -20.2485 < 2.2e-16 ***
+Rata_Ocupare  0.042407   0.062213   0.6816  0.495783    
+Pop_Activa   -1.037893   0.326945  -3.1745  0.001593 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-    # Filtreaza doar judetele din regiunea Centru si Romania
-    judete_centru_romania = ['Alba', 'Brasov', 'Covasna', 'Harghita', 'Mures', 'Sibiu', 'Romania']
+Total Sum of Squares:    467.72
+Residual Sum of Squares: 168.26
+R-Squared:      0.64026
+Adj. R-Squared: 0.60789
+F-statistic: 222.475 on 4 and 500 DF, p-value: < 2.22e-16
 
-    # Prelucreaza datele pentru somaj
-    df_somaj = df_somaj[(df_somaj['Sexe'] == sex) & (df_somaj['Judete'].isin(judete_centru_romania))]
-    df_somaj = converteste_ani_la_float(df_somaj, [an])
-    df_somaj = df_somaj[['Judete', an]].rename(columns={an: 'Rata_somaj'}).reset_index(drop=True)
+=== MODELUL 2: RANDOM EFFECTS ===
+Oneway (individual) effect Random Effect Model 
+   (Swamy-Arora's transformation)
 
-    # Prelucreaza datele pentru absolventi
-    df_absolventi = df_absolventi[df_absolventi['Judete'].isin(judete_centru_romania)]
-    df_absolventi = converteste_ani_la_float(df_absolventi, [an])
-    df_absolventi_total = df_absolventi.groupby('Judete')[an].sum().reset_index().rename(columns={an: 'Absolventi_totali'})
+Call:
+plm(formula = Salariu ~ Imigranti + Rata_Somaj + Rata_Ocupare + 
+    Pop_Activa, data = panel_pdata, model = "random")
 
-    # Prelucreaza datele pentru populatie activa
-    df_popactiva = df_popactiva[(df_popactiva['Sexe'] == sex) & (df_popactiva['Judete'].isin(judete_centru_romania))]
-    df_popactiva = converteste_ani_la_float(df_popactiva, [an])
-    df_popactiva[an] = df_popactiva[an] * 1000  # conversie mii persoane -> persoane
-    df_popactiva = df_popactiva[['Judete', an]].rename(columns={an: 'Populatie_activa'})
+Balanced Panel: n = 42, T = 13, N = 546
 
-    # Uneste datele intr-un singur DataFrame pentru regresie
-    df_regresie = df_somaj.merge(df_absolventi_total, on='Judete').merge(df_popactiva, on='Judete')
+Effects:
+                  var std.dev share
+idiosyncratic 0.33651 0.58010 0.937
+individual    0.02257 0.15025 0.063
+theta: 0.2691
 
-    st.markdown("#### Tabel cu datele folosite la regresie")
-    st.dataframe(df_regresie)
+Residuals:
+     Min.   1st Qu.    Median   3rd Qu.      Max. 
+-1.977198 -0.553702 -0.072856  0.525829  2.463928 
 
-    # Pregateste variabilele pentru modelul de regresie
-    X = df_regresie[['Absolventi_totali', 'Populatie_activa']]
-    y = df_regresie['Rata_somaj']
+Coefficients:
+                Estimate  Std. Error  z-value  Pr(>|z|)    
+(Intercept)  -5.1074e-16  4.1809e-02   0.0000  1.000000    
+Imigranti     3.1267e-01  4.2487e-02   7.3592  1.85e-13 ***
+Rata_Somaj   -7.2608e-01  4.1321e-02 -17.5715 < 2.2e-16 ***
+Rata_Ocupare  2.6614e-02  4.8461e-02   0.5492  0.582880    
+Pop_Activa   -1.4790e-01  5.4560e-02  -2.7108  0.006711 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-    # Standardizeaza variabilele independente
-    from sklearn.preprocessing import StandardScaler
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+Total Sum of Squares:    509
+Residual Sum of Squares: 275.8
+R-Squared:      0.45816
+Adj. R-Squared: 0.45415
+Chisq: 457.444 on 4 DF, p-value: < 2.22e-16
 
-    # Adauga constanta pentru intercept
-    X_scaled_const = sm.add_constant(X_scaled)
+============================================================
+COMPARAREA MODELELOR
+============================================================
 
-    # Calculeaza modelul de regresie OLS
-    model = sm.OLS(y, X_scaled_const).fit()
+1. HAUSMAN TEST (Fixed Effects vs Random Effects):
+H0: Random Effects model este preferat
+H1: Fixed Effects model este preferat
 
-    st.markdown("#### Rezultatele modelului de regresie multipla")
-    # Afiseaza iesirea modelului folosind font monospace pentru aliniere corecta
-    st.code(model.summary().as_text(), language="")
+	Hausman Test
 
-    # Afiseaza formula matematica a modelului
-    st.latex(r'''
-Rata\_somaj = \beta_0 + \beta_1 \cdot Absolventi\_totali^{(standardizat)} + \beta_2 \cdot Populatie\_activa^{(standardizat)} + \varepsilon
-''')
+data:  Salariu ~ Imigranti + Rata_Somaj + Rata_Ocupare + Pop_Activa
+chisq = 157.27, df = 4, p-value < 2.2e-16
+alternative hypothesis: one model is inconsistent
 
-    # Panou informativ cu explicatii despre termeni
-    st.markdown(
-        """
-        <div style="background-color:#223b54;padding:18px;border-radius:8px;color:white;">
-        <b>Explicatii pentru termeni:</b>
-        <ul>
-        <li><b>Rata_somaj</b> – variabila dependenta</li>
-        <li><b>Absolventi_totali</b> – numarul total de absolventi</li>
-        <li><b>Populatie_activa</b> – populatia activa</li>
-        <li><b>β₀</b> – interceptul modelului</li>
-        <li><b>β₁, β₂</b> – coeficientii de regresie (masoara influenta variabilelor independente 
-              asupra ratei somajului)</li>
-        <li><b>ε</b> – eroarea/residuu (diferenta dintre valoarea observata si cea prezisa de model)</li>
-        </ul>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+Rezultat: Fixed Effects model este preferat (p < 0.05)
 
-    # Verificare ipoteze regresie
-    st.markdown("#### Verificarea ipotezelor regresiei liniare multiple")
-
-    # 1. Normalitatea reziduurilor prin Q-Q plot
-    st.markdown("**Normalitatea reziduurilor (Q-Q plot):**")
-    fig_qq = plt.figure()
-    sm.qqplot(model.resid, line='s', ax=plt.gca())
-    plt.title('Q-Q Plot al reziduurilor')
-    st.pyplot(fig_qq)
-
-    # 2. Homoscedasticitatea reziduurilor prin scatter plot reziduuri vs valori prezise
-    st.markdown("**Homoscedasticitatea reziduurilor:**")
-    fig_resid = plt.figure()
-    plt.scatter(model.fittedvalues, model.resid, color='blue')
-    plt.axhline(y=0, color='red', linestyle='--')
-    plt.xlabel('Valori prezise')
-    plt.ylabel('Reziduuri')
-    plt.title('Reziduuri vs Valori prezise')
-    st.pyplot(fig_resid)
-
-    # 3. Multicoliniaritatea variabilelor independente prin calcul VIF
-    st.markdown("**Multicoliniaritatea variabilelor independente (VIF):**")
-    vif_data = pd.DataFrame()
-    vif_data['Variabila'] = ['Absolventi_totali', 'Populatie_activa']
-    vif_data['VIF'] = [variance_inflation_factor(X_scaled, i) for i in range(X_scaled.shape[1])]
-    st.dataframe(vif_data)
-
-    # 4. Semnificativitatea modelului (R^2, p-value)
-    st.markdown("**Semnificativitatea modelului:**")
-    st.write(f"R^2: {model.rsquared:.3f}")
-    st.write(f"p-value model: {model.f_pvalue:.4f}")
-    st.write("Coeficienti si semnificatie (p-value):")
-    coef_df = pd.DataFrame({
-        'Coeficient': model.params,
-        'p-value': model.pvalues
-    })
-    coef_df.index = ['Intercept', 'Absolventi_totali (standardizat)', 'Populatie_activa (standardizat)']
-    st.dataframe(coef_df)
-
-    # Explicatii suplimentare pentru profesori (fundal albastru)
-    st.markdown(
-        """
-        <div style="background-color:#223b54;padding:18px;border-radius:8px;color:white;">
-        <b>Explicatii privind verificarea ipotezelor:</b><br>
-        <ul>
-        <li><b>Normalitatea reziduurilor</b> se verifica cu Q-Q plot. Daca punctele se aliniez pe linia diagonala, 
-            reziduurile pot fi considerate normale.</li>
-        <li><b>Homoscedasticitatea reziduurilor</b> se verifica prin scatter plot reziduuri vs valori prezise. 
-            Daca reziduurile sunt distribuite aleator in jurul axei 0, ipoteza este indeplinita.</li>
-        </ul>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+2. COMPARAREA R-SQUARED:
+Fixed Effects R-squared: 0.6403 
+Random Effects R-squared: 0.4582 
+""", language="")
+    
+    # Interpretarea rezultatelor
+    st.markdown("#### Interpretarea rezultatelor")
+    st.markdown("""
+    **Modelul selectat:** Pe baza Hausman Test (p < 2.2e-16), modelul **Fixed Effects** 
+    este preferat față de modelul Random Effects.
+    
+    **Puterea explicativă:** Modelul Fixed Effects explică **64.03%** din variația 
+    salariului (R-squared = 0.6403), comparativ cu **45.82%** pentru modelul Random Effects.
+    
+    **Variabile semnificative:**
+    - **Imigranti** (p = 5.808e-09): Efect pozitiv semnificativ
+    - **Rata_Somaj** (p < 2.2e-16): Efect negativ puternic semnificativ  
+    - **Pop_Activa** (p = 0.001593): Efect negativ semnificativ
+    - **Rata_Ocupare** (p = 0.495783): Nu este semnificativ statistic
+    """)  
 
 def pagina_principala():
     # Pagina de landing cu design modern și estetic
@@ -3049,13 +3038,13 @@ def main():
             "Hartă termică șomaj",
             "Comparație rată șomaj",
             "Salariați pe activități (bare)",
-            "Salariați pe activități (circulare)",
+            "Salariați pe activități (grafice circulare)",
             "Corelație șomaj-ocupare",
             "Structura absolvenți",
             "Statistici descriptive",
             "Analiză spațială",
             "Sectorul public vs privat",
-            "Regresie multiplă"
+            "Analiză de regresie"
         ),
         index=0
     )
@@ -3118,7 +3107,7 @@ def main():
                 (df['Judete'].str.upper() == 'TOTAL')]
         bar_chart_salariati_activitati(df, ani, an)
 
-    elif optiune == "Salariați pe activități (circulare)":
+    elif optiune == "Salariați pe activități (grafice circulare)":
         st.header("Structura salariatilor pe activitati economice (grafice circulare pe judete)")
         st.info("Fiecare grafic circular arata structura salariatilor pe activitati economice pentru un judet.")
         df = incarca_date('Salariati2')
@@ -3168,8 +3157,8 @@ def main():
     elif optiune == "Sectorul public vs privat":
         analiza_spatiala_public_privat()
 
-    elif optiune == "Regresie multiplă":
-        analiza_regresie_multipla()
+    elif optiune == "Analiză de regresie":
+        analiza_regresie()
 
 if __name__ == "__main__":
     main()
