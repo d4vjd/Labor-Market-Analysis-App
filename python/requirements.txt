@@ -8,4 +8,4 @@ folium
 streamlit-folium
 geopandas
 scikit-learn
-scipy>=1.11.0,<1.14.0
+scipy
