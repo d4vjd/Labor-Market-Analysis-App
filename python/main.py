@@ -4,8 +4,6 @@ import sqlite3
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
-import statsmodels.api as sm
-from statsmodels.stats.outliers_influence import variance_inflation_factor
 import matplotlib.pyplot as plt
 import seaborn as sns
 import geopandas as gpd
