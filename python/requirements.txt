@@ -1,11 +1,12 @@
 streamlit
 pandas
-plotly
 numpy
-statsmodels
+plotly
 matplotlib
 seaborn
-scikit-learn
-streamlit_folium
 folium
+streamlit-folium
 geopandas
+scikit-learn
+scipy>=1.11.0,<1.14.0
+statsmodels>=0.14.0
