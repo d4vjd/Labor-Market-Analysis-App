@@ -1,0 +1,121 @@
+ANALIZA PANEL DATA - REGIUNEA CENTRU
+Judete incluse: Alba, Brasov, Sibiu, Mures, Covasna, Harghita
+============================================================
+
+Combinarea datelor pentru regiunea Centru...
+Judete din regiunea Centru incluse in analiza:
+[1] "Alba"      "Brasov"    "Covasna"   "Harghita"  "Maramures" "Mures"    
+[7] "Sibiu"    
+Numar total de observatii: 91 
+Standardizarea datelor folosind functia scale()...
+Structura datelor panel pentru regiunea Centru:
+tibble [91 × 7] (S3: tbl_df/tbl/data.frame)
+ $ Judete      : chr [1:91] "Alba" "Alba" "Alba" "Alba" ...
+ $ An          : num [1:91] 2010 2011 2012 2013 2014 ...
+ $ Salariu     : num [1:91] -0.987 -1.004 -0.941 -0.879 -0.734 ...
+ $ Imigranti   : num [1:91] -0.547 -0.732 -0.74 -0.606 -0.606 ...
+ $ Rata_Somaj  : num [1:91] 2.7 1.56 1.9 2.8 1.36 ...
+ $ Rata_Ocupare: num [1:91] -0.423 -0.2984 0.0909 0.1687 1.5234 ...
+ $ Pop_Activa  : num [1:91] -0.14351 -0.19859 -0.07006 -0.00579 -0.1839 ...
+
+Primele 10 randuri:
+# A tibble: 10 × 7
+   Judete    An Salariu Imigranti Rata_Somaj Rata_Ocupare Pop_Activa
+   <chr>  <dbl>   <dbl>     <dbl>      <dbl>        <dbl>      <dbl>
+ 1 Alba    2010 -0.987     -0.547      2.70       -0.423    -0.144  
+ 2 Alba    2011 -1.00      -0.732      1.56       -0.298    -0.199  
+ 3 Alba    2012 -0.941     -0.740      1.90        0.0909   -0.0701 
+ 4 Alba    2013 -0.879     -0.606      2.80        0.169    -0.00579
+ 5 Alba    2014 -0.734     -0.606      1.36        1.52     -0.184  
+ 6 Alba    2015 -0.530     -0.517      0.506       1.63     -0.248  
+ 7 Alba    2016 -0.295     -0.421      0.256       1.62     -0.250  
+ 8 Alba    2017  0.0865    -0.406     -0.443       1.96     -0.254  
+ 9 Alba    2018  0.505     -0.324     -0.593       2.29     -0.256  
+10 Alba    2019  0.885     -0.280     -0.743       2.46     -0.250  
+Definirea structurii panel data...
+Informatii despre panelul de date pentru regiunea Centru:
+Balanced Panel: n = 7, T = 13, N = 91
+
+=== MODELUL 1: FIXED EFFECTS (REGIUNEA CENTRU) ===
+Oneway (individual) effect Within Model
+
+Call:
+plm(formula = Salariu ~ Imigranti + Rata_Somaj + Rata_Ocupare + 
+    Pop_Activa, data = panel_pdata, model = "within")
+
+Balanced Panel: n = 7, T = 13, N = 91
+
+Residuals:
+     Min.   1st Qu.    Median   3rd Qu.      Max. 
+-0.668774 -0.301753 -0.089754  0.296207  1.200325 
+
+Coefficients:
+             Estimate Std. Error t-value  Pr(>|t|)    
+Imigranti     0.54568    0.10293  5.3015 9.937e-07 ***
+Rata_Somaj   -0.43842    0.12927 -3.3913 0.0010831 ** 
+Rata_Ocupare  0.22327    0.14449  1.5452 0.1262379    
+Pop_Activa   -2.10966    0.52957 -3.9837 0.0001487 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Total Sum of Squares:    83.695
+Residual Sum of Squares: 16.99
+R-Squared:      0.79701
+Adj. R-Squared: 0.77163
+F-statistic: 78.5247 on 4 and 80 DF, p-value: < 2.22e-16
+
+=== MODELUL 2: RANDOM EFFECTS (REGIUNEA CENTRU) ===
+Oneway (individual) effect Random Effect Model 
+   (Swamy-Arora's transformation)
+
+Call:
+plm(formula = Salariu ~ Imigranti + Rata_Somaj + Rata_Ocupare + 
+    Pop_Activa, data = panel_pdata, model = "random")
+
+Balanced Panel: n = 7, T = 13, N = 91
+
+Effects:
+                  var std.dev share
+idiosyncratic 0.21237 0.46084 0.828
+individual    0.04405 0.20987 0.172
+theta: 0.4799
+
+Residuals:
+     Min.   1st Qu.    Median   3rd Qu.      Max. 
+-0.721171 -0.391599 -0.076146  0.371390  1.193368 
+
+Coefficients:
+                Estimate  Std. Error z-value  Pr(>|z|)    
+(Intercept)  -3.4281e-16  1.0363e-01  0.0000    1.0000    
+Imigranti     5.2542e-01  1.0165e-01  5.1689 2.355e-07 ***
+Rata_Somaj   -6.2681e-01  8.3103e-02 -7.5426 4.608e-14 ***
+Rata_Ocupare  7.8424e-02  8.5258e-02  0.9198    0.3577    
+Pop_Activa   -5.1827e-01  1.1553e-01 -4.4860 7.259e-06 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Total Sum of Squares:    85.401
+Residual Sum of Squares: 22.737
+R-Squared:      0.73377
+Adj. R-Squared: 0.72138
+Chisq: 237.025 on 4 DF, p-value: < 2.22e-16
+
+============================================================
+COMPARAREA MODELELOR - REGIUNEA CENTRU
+============================================================
+
+1. HAUSMAN TEST (Fixed Effects vs Random Effects):
+H0: Random Effects model este preferat
+H1: Fixed Effects model este preferat
+
+	Hausman Test
+
+data:  Salariu ~ Imigranti + Rata_Somaj + Rata_Ocupare + Pop_Activa
+chisq = 22.027, df = 4, p-value = 0.000198
+alternative hypothesis: one model is inconsistent
+
+Rezultat: Fixed Effects model este preferat (p < 0.05)
+
+2. COMPARAREA R-SQUARED:
+Fixed Effects R-squared: 0.797 
+Random Effects R-squared: 0.7338 
