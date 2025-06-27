@@ -1,4 +1,4 @@
-# 📊 Analiză Economică și Demografică - Regiunea Centru România
+# 📊 Analiza Pieței Muncii - Regiunea Centru România
 
 ---
 
@@ -6,7 +6,7 @@
 
 ### 📋 **Descrierea Proiectului**
 
-Această aplicație oferă o analiză comprehensivă a indicatorilor economici și demografici pentru regiunea Centru a României. Proiectul combină analiza statistică avansată în **R** cu vizualizări interactive moderne în **Python/Streamlit**.
+Această aplicație oferă o analiză interactivă a indicatorilor economici și demografici ai pieței muncii pentru Regiunea Centru a României. Proiectul combină analiza statistică avansată în **R** cu vizualizări interactive moderne în **Python/Streamlit**.
 
 ### 🌐 **Accesează Aplicația**
 
@@ -69,7 +69,7 @@ Analiza se concentrează pe cele **6 județe** din regiunea Centru:
 ├── 📊 date/                 # Baza de date
 │   └── data.sqlite          # Date economice și demografice
 ├── 📈 figuri/               # Grafice și vizualizări
-└── 🗺️ date_licenta_tempo/   # Date TEMPO (Eurostat)
+└── 🗺️ date_licenta_tempo/   # Date TEMPO (INS România)
 ```
 
 #### 🔧 **Tehnologii Utilizate**
@@ -88,41 +88,6 @@ Analiza se concentrează pe cele **6 județe** din regiunea Centru:
 - `folium` - Hărți interactive
 - `pandas` - Procesarea datelor
 - `scipy` - Analize statistice
-
----
-
-### 🚀 **Instalare și Rulare**
-
-#### **Cerințe Preliminare**
-- Python 3.8+
-- R 4.0+
-- SQLite
-
-#### **Pași de Instalare**
-
-1. **Clonează repository-ul:**
-```bash
-git clone [repository-url]
-cd Licenta
-```
-
-2. **Instalează dependențele Python:**
-```bash
-cd python
-pip install -r requirements.txt
-```
-
-3. **Rulează aplicația Streamlit:**
-```bash
-streamlit run main.py
-```
-
-4. **Pentru analizele R:**
-```bash
-cd ../r
-Rscript matrice_cor_centru.r
-Rscript regresie_panel_centru.r
-```
 
 ---
 
@@ -155,7 +120,6 @@ Rscript regresie_panel_centru.r
 ### 📚 **Surse de Date**
 
 - **TEMPO Online** (Institutul Național de Statistică)
-- **Eurostat** (Oficiul de Statistică al Uniunii Europene)
 - **Date geografice** pentru județele României
 
 ---
@@ -163,7 +127,7 @@ Rscript regresie_panel_centru.r
 ### 👨‍💻 **Autor**
 
 **David Pupăză**  
-📧 Contact: [email]  
+📧 Contact: [davidpupaza3@gmail.com]  
 🎓 Lucrare de licență - Analiza economică și demografică
 
 ---
@@ -235,7 +199,7 @@ The analysis focuses on the **6 counties** of the Central region:
 ├── 📊 date/                 # Database
 │   └── data.sqlite          # Economic and demographic data
 ├── 📈 figuri/               # Charts and visualizations
-└── 🗺️ date_licenta_tempo/   # TEMPO data (Eurostat)
+└── 🗺️ date_licenta_tempo/   # TEMPO data (INS Romania)
 ```
 
 #### 🔧 **Technologies Used**
@@ -254,41 +218,6 @@ The analysis focuses on the **6 counties** of the Central region:
 - `folium` - Interactive maps
 - `pandas` - Data processing
 - `scipy` - Statistical analysis
-
----
-
-### 🚀 **Installation and Setup**
-
-#### **Prerequisites**
-- Python 3.8+
-- R 4.0+
-- SQLite
-
-#### **Installation Steps**
-
-1. **Clone the repository:**
-```bash
-git clone [repository-url]
-cd Licenta
-```
-
-2. **Install Python dependencies:**
-```bash
-cd python
-pip install -r requirements.txt
-```
-
-3. **Run the Streamlit application:**
-```bash
-streamlit run main.py
-```
-
-4. **For R analyses:**
-```bash
-cd ../r
-Rscript matrice_cor_centru.r
-Rscript regresie_panel_centru.r
-```
 
 ---
 
@@ -329,7 +258,7 @@ Rscript regresie_panel_centru.r
 ### 👨‍💻 **Author**
 
 **David Pupăză**  
-📧 Contact: [email]  
+📧 Contact: [davidpupaza3@gmail.com]  
 🎓 Bachelor's thesis - Economic and demographic analysis
 
 ---
@@ -344,4 +273,4 @@ This project is developed for academic purposes as part of a bachelor's thesis.
 
 ---
 
-*Last updated: January 2025*
+*Last updated: June 2025*
