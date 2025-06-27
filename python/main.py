@@ -1122,8 +1122,8 @@ def grafic_linie_pib(df, ani, titlu, ylabel):
             x=ani_num,
             y=[row[an] for an in ani],
             mode='lines+markers',
-            name="Romania",
-            text=[f"Romania<br>{an}: {row[an]:.0f} lei" for an in ani],
+            name="Medie Romania",
+            text=[f"Medie Romania<br>{an}: {row[an]:.0f} lei" for an in ani],
             hoverinfo='text+y',
             line=dict(width=5, color="#FFFFFF", dash='dot'),
             marker=dict(size=12, color="#FFFFFF", line=dict(width=2, color='black'))
@@ -1684,8 +1684,8 @@ def grafic_linie_somaj(df, ani, titlu, ylabel):
             x=ani_num,
             y=[row[an] for an in ani],
             mode='lines+markers',
-            name="Romania",
-            text=[f"Romania<br>{an}: {row[an]:.2f}%" for an in ani],
+            name="Medie Romania",
+            text=[f"Medie Romania<br>{an}: {row[an]:.2f}%" for an in ani],
             hoverinfo='text+y',
             line=dict(width=5, color="#FFFFFF", dash='dot'),
             marker=dict(size=12, color="#FFFFFF", line=dict(width=2, color='black'))
@@ -2984,8 +2984,8 @@ def grafic_linie_absolventi(df, ani, titlu, ylabel):
             x=ani_num,
             y=[row[an] for an in ani],
             mode='lines+markers',
-            name="Media pe judete",
-            text=[f"Media pe judete<br>{an}: {row[an]:.0f} absolventi" for an in ani],
+            name="Medie Romania",
+            text=[f"Medie Romania<br>{an}: {row[an]:.0f} absolventi" for an in ani],
             hoverinfo='text+y',
             line=dict(width=5, color="#FFFFFF", dash='dot'),
             marker=dict(size=12, color="#FFFFFF", line=dict(width=2, color='black'))
@@ -3007,9 +3007,8 @@ def grafic_linie_absolventi(df, ani, titlu, ylabel):
     
     st.plotly_chart(fig, use_container_width=True)
     st.markdown("#### Tabel cu datele")
-    # Renumeste Romania la Media pe judete pentru claritate in tabel
     df_display = df.copy()
-    df_display.loc[df_display['Judete'] == 'Romania', 'Judete'] = 'Media pe judete'
+    df_display.loc[df_display['Judete'] == 'Romania', 'Judete'] = 'Romania'
     st.dataframe(df_display.set_index('Judete')[ani])
     st.divider()
 
