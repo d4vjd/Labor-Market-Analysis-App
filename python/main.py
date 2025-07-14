@@ -13,6 +13,7 @@ from streamlit_folium import st_folium
 from scipy import stats
 from scipy.stats import shapiro, kstest, ttest_1samp
 import warnings
+from pathlib import Path
 warnings.filterwarnings('ignore')
 
 @st.cache_data
@@ -426,7 +427,7 @@ def choropleth_imigranti(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
-    # Coordonatele și prescurtările județelor din regiunea Centru
+    # Coordonatele si prescurtarile judetelor din regiunea Centru
     coordonate_judete = {
         'Alba': (46.0667, 23.5833),
         'Brasov': (45.6500, 25.6000),
@@ -617,7 +618,7 @@ def choropleth_rata_ocupare(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
-    # Coordonatele și prescurtările județelor din regiunea Centru
+    # Coordonatele si prescurtarile judetelor din regiunea Centru
     coordonate_judete = {
         'Alba': (46.0667, 23.5833),
         'Brasov': (45.6500, 25.6000),
@@ -712,7 +713,7 @@ def choropleth_populatie_activa(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
-    # Coordonatele și prescurtările județelor din regiunea Centru
+    # Coordonatele si prescurtarile judetelor din regiunea Centru
     coordonate_judete = {
         'Alba': (46.0667, 23.5833),
         'Brasov': (45.6500, 25.6000),
@@ -806,7 +807,7 @@ def choropleth_absolventi(geo_data, geo_type):
     df_total = df_filtrat.groupby('Judete')[an].sum().reset_index()
     df_total['Judete_std'] = df_total['Judete'].apply(standardizeaza_nume_judete)
 
-    # Coordonatele și prescurtările județelor din regiunea Centru
+    # Coordonatele si prescurtarile judetelor din regiunea Centru
     coordonate_judete = {
         'Alba': (46.0667, 23.5833),
         'Brasov': (45.6500, 25.6000),
@@ -1003,7 +1004,7 @@ def choropleth_salariati_activitati(geo_data, geo_type):
     df_filtrat = converteste_ani_la_float(df_filtrat, [an])
     df_filtrat['Judete_std'] = df_filtrat['Judete'].apply(standardizeaza_nume_judete)
 
-    # Coordonatele și prescurtările județelor din regiunea Centru
+    # Coordonatele si prescurtarile judetelor din regiunea Centru
     coordonate_judete = {
         'Alba': (46.0667, 23.5833),
         'Brasov': (45.6500, 25.6000),
@@ -1189,17 +1190,17 @@ def verifica_semnificativitatea_statistici(valori, nume_indicator):
     
     # Test de normalitate
     if n <= 50:
-        # Shapiro-Wilk pentru eșantioane mici
+        # Shapiro-Wilk pentru esantioane mici
         stat_shapiro, p_shapiro = shapiro(valori)
         rezultate['test_normalitate'] = f"Shapiro-Wilk: statistica={stat_shapiro:.4f}, p-value={p_shapiro:.4f}"
         rezultate['normalitate_concluzie'] = "Datele urmează distribuția normală" if p_shapiro > 0.05 else "Datele NU urmează distribuția normală"
     else:
-        # Kolmogorov-Smirnov pentru eșantioane mari
+        # Kolmogorov-Smirnov pentru esantioane mari
         stat_ks, p_ks = kstest(valori, 'norm')
         rezultate['test_normalitate'] = f"Kolmogorov-Smirnov: statistica={stat_ks:.4f}, p-value={p_ks:.4f}"
         rezultate['normalitate_concluzie'] = "Datele urmează distribuția normală" if p_ks > 0.05 else "Datele NU urmează distribuția normală"
     
-    # Intervale de încredere pentru medie (95% și 99%)
+    # Intervale de incredere pentru medie (95% si 99%)
     media = np.mean(valori)
     eroare_std = stats.sem(valori)  # Standard error of mean
     
@@ -1211,7 +1212,7 @@ def verifica_semnificativitatea_statistici(valori, nume_indicator):
     ic_99 = stats.t.interval(0.99, n-1, loc=media, scale=eroare_std)
     rezultate['interval_incredere_99'] = f"IC 99% pentru medie: [{ic_99[0]:.3f}, {ic_99[1]:.3f}]"
     
-    # Test t pentru media (testăm dacă media diferă semnificativ de 0)
+    # Test t pentru media (testam daca media difera semnificativ de 0)
     t_stat, p_t = ttest_1samp(valori, 0)
     rezultate['test_t_media'] = f"Test t pentru medie=0: t={t_stat:.4f}, p-value={p_t:.4f}"
     rezultate['media_semnificativa'] = "Media este semnificativ diferită de 0" if p_t < 0.05 else "Media NU este semnificativ diferită de 0"
@@ -1274,10 +1275,10 @@ def calculeaza_statistici_somaj():
     df_stat['Valoare'] = df_stat['Valoare'].round(3)
     st.dataframe(df_stat, use_container_width=True)
     
-    # Verificarea semnificativității
+    # Verificarea semnificativitatii
     rezultate_teste = verifica_semnificativitatea_statistici(valori, "Rata somajului")
     
-    # Secțiunea informativă cu rezultatele verificării
+    # Sectiunea informativa cu rezultatele verificarii
     st.markdown("#### Verificarea semnificativității statisticilor")
     st.info(f"""
     **Rezultatele testelor statistice pentru rata somajului:**
@@ -1343,10 +1344,10 @@ def calculeaza_statistici_pib():
     df_stat['Valoare'] = df_stat['Valoare'].round(2)
     st.dataframe(df_stat, use_container_width=True)
     
-    # Verificarea semnificativității
+    # Verificarea semnificativitatii
     rezultate_teste = verifica_semnificativitatea_statistici(valori, "PIB regional pe locuitor")
     
-    # Secțiunea informativă cu rezultatele verificării
+    # Sectiunea informativa cu rezultatele verificarii
     st.markdown("#### Verificarea semnificativității statisticilor")
     st.info(f"""
     **Rezultatele testelor statistice pentru PIB regional pe locuitor:**
@@ -1414,10 +1415,10 @@ def calculeaza_statistici_salariu():
     df_stat['Valoare'] = df_stat['Valoare'].round(2)
     st.dataframe(df_stat, use_container_width=True)
     
-    # Verificarea semnificativității
+    # Verificarea semnificativitatii
     rezultate_teste = verifica_semnificativitatea_statistici(valori, "Castigul salarial mediu net")
     
-    # Secțiunea informativă cu rezultatele verificării
+    # Sectiunea informativa cu rezultatele verificarii
     st.markdown("#### Verificarea semnificativității statisticilor")
     st.info(f"""
     **Rezultatele testelor statistice pentru castigul salarial mediu net:**
@@ -1483,10 +1484,10 @@ def calculeaza_statistici_ocupare():
     df_stat['Valoare'] = df_stat['Valoare'].round(3)
     st.dataframe(df_stat, use_container_width=True)
     
-    # Verificarea semnificativității
+    # Verificarea semnificativitatii
     rezultate_teste = verifica_semnificativitatea_statistici(valori, "Rata de ocupare a resurselor de munca")
     
-    # Secțiunea informativă cu rezultatele verificării
+    # Sectiunea informativa cu rezultatele verificarii
     st.markdown("#### Verificarea semnificativității statisticilor")
     st.info(f"""
     **Rezultatele testelor statistice pentru rata de ocupare a resurselor de munca:**
@@ -1554,10 +1555,10 @@ def calculeaza_statistici_populatie():
     df_stat['Valoare'] = df_stat['Valoare'].round(3)
     st.dataframe(df_stat, use_container_width=True)
     
-    # Verificarea semnificativității
+    # Verificarea semnificativitatii
     rezultate_teste = verifica_semnificativitatea_statistici(valori, "Populatia activa")
     
-    # Secțiunea informativă cu rezultatele verificării
+    # Sectiunea informativa cu rezultatele verificarii
     st.markdown("#### Verificarea semnificativității statisticilor")
     st.info(f"""
     **Rezultatele testelor statistice pentru populatia activa:**
@@ -1623,10 +1624,10 @@ def calculeaza_statistici_imigranti():
     df_stat['Valoare'] = df_stat['Valoare'].round(2)
     st.dataframe(df_stat, use_container_width=True)
     
-    # Verificarea semnificativității
+    # Verificarea semnificativitatii
     rezultate_teste = verifica_semnificativitatea_statistici(valori, "Imigranti definitivi")
     
-    # Secțiunea informativă cu rezultatele verificării
+    # Sectiunea informativa cu rezultatele verificarii
     st.markdown("#### Verificarea semnificativității statisticilor")
     st.info(f"""
     **Rezultatele testelor statistice pentru imigranti definitivi:**
@@ -1882,10 +1883,10 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
     df_x = converteste_ani_la_float(df_x, [an])
     df_y = converteste_ani_la_float(df_y, [an])
     
-    # Definește județele din regiunea Centru
+    # Defineste judetele din regiunea Centru
     judete_centru = ["Alba", "Brasov", "Covasna", "Harghita", "Mures", "Sibiu"]
     
-    # Toate celelalte județe (excluzând regiunea Centru și România)
+    # Toate celelalte judete (excluzand regiunea Centru si Romania)
     judete_alte = [j for j in TOATE_JUDETELE if j not in judete_centru and j != "Romania"]
     
     df_corel = pd.DataFrame({
@@ -1896,7 +1897,7 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
     
     fig = go.Figure()
     
-    # PRIMUL: Adaugă celelalte județe cu gri și opacitate redusă (să fie în spate)
+    # Adauga celelalte judete cu gri si opacitate redusa
     for jud in judete_alte:
         row = df_corel[df_corel['Judet'] == jud]
         if not row.empty:
@@ -1908,15 +1909,15 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
                 text=[jud],
                 marker=dict(
                     size=12, 
-                    color="rgba(128, 128, 128, 0.5)",  # Gri cu opacitate redusă
+                    color="rgba(128, 128, 128, 0.5)",
                     line=dict(width=1, color="rgba(128, 128, 128, 0.7)")
                 ),
                 textfont=dict(size=10, color="rgba(128, 128, 128, 0.8)"),
                 textposition='top center',
-                showlegend=False  # Nu afișa în legendă pentru a nu aglomera
+                showlegend=False
             ))
     
-    # AL DOILEA: Adaugă județele din regiunea Centru cu culorile specifice (să fie deasupra)
+    # Adauga judetele din regiunea Centru cu culorile specifice
     for jud in judete_centru:
         row = df_corel[df_corel['Judet'] == jud]
         if not row.empty:
@@ -1932,7 +1933,7 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
                 textposition='top center'
             ))
     
-    # AL TREILEA: Adaugă România cu culoarea și textul specific (să fie cel mai sus)
+    # Adauga Romania
     row_romania = df_corel[df_corel['Judet'] == "Romania"]
     if not row_romania.empty:
         fig.add_trace(go.Scatter(
@@ -1942,7 +1943,7 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
             name="Romania",
             text=["Romania"],
             marker=dict(size=20, color="#FFFFFF", line=dict(width=2, color="#222")),
-            textfont=dict(size=14, color="#FFFFFF"),  # Text alb pentru România
+            textfont=dict(size=14, color="#FFFFFF"),
             textposition='top center'
         ))
     
@@ -1957,7 +1958,7 @@ def scatter_corelatie_interactiv(df_x, df_y, an, titlu, xlabel, ylabel):
     
     st.plotly_chart(fig, use_container_width=True)
     st.markdown("#### Tabel cu datele pentru regiunea Centru și România")
-    # Afișează doar datele pentru regiunea Centru și România în tabel
+    # Afiseaza doar datele pentru regiunea Centru si Romania in tabel
     df_display = df_corel[df_corel['Judet'].isin(judete_centru + ["Romania"])]
     st.dataframe(df_display.set_index('Judet'))
     st.divider()
@@ -2500,7 +2501,7 @@ def analiza_spatiala_public_privat():
         else:
             delta_total = "N/A"
     else:
-        # Anul precedent nu există în date
+        # Anul precedent nu există in date
         delta_public = "N/A - nu sunt date disponibile"
         delta_privat = "N/A - nu sunt date disponibile"
         delta_total = "N/A - nu sunt date disponibile"
@@ -2550,7 +2551,7 @@ def analiza_regresie():
         "Datele au fost standardizate folosind funcția scale() din R."
     )
     
-    # Explicația despre metodologia folosită
+    # Explicatia despre metodologia folosita
     st.markdown("#### Metodologia analizei")
     st.markdown("""
     **Selecția variabilelor:** Variabilele au fost alese în funcție de matricea de corelație 
@@ -2565,13 +2566,13 @@ def analiza_regresie():
     din R pentru a permite compararea directă a coeficienților.
     """)
     
-    # Afișarea matricei de corelație
+    # Afisarea matricei de corelatie
     st.markdown("#### Matricea de corelație")
     st.markdown("Matricea de corelație utilizată pentru selecția variabilelor:")
     
     try:
         from PIL import Image
-        image = Image.open('matrice_corelatie.png')
+        image = Image.open(Path(__file__).with_name("matrice_corelatie.png"))
         st.image(image, caption='Matricea de corelație între variabilele economice și demografice', 
                 width=600)
     except:
@@ -2583,7 +2584,7 @@ def analiza_regresie():
     st.markdown("#### Rezultatele analizei de regresie")
     st.markdown("Rezultatele obținute din analiza efectuată în R:")
     
-    # Afișarea rezultatelor formatate
+    # Afisarea rezultatelor formatate
     st.code("""
 === MODELUL 1: FIXED EFFECTS ===
 Oneway (individual) effect Within Model
@@ -2687,7 +2688,7 @@ Random Effects R-squared: 0.4582
     """)  
 
 def pagina_principala():
-    # Pagina de landing cu design modern și estetic
+    # Pagina de landing cu design modern si estetic
     
     # Import font modern
     st.markdown("""
@@ -2804,7 +2805,7 @@ def pagina_principala():
     
     st.markdown("<br><br>", unsafe_allow_html=True)
     
-    # Sectiune indicatori și tipuri de analiză - carduri complete
+    # Sectiune indicatori si tipuri de analiza
     col1, col2 = st.columns(2)
     
     with col1:
@@ -2877,7 +2878,7 @@ def pagina_principala():
         </div>
         """, unsafe_allow_html=True)
     
-    # Sectiune sursa datelor - design modern
+    # Sectiune sursa datelor
     st.markdown("""
     <div style="background: linear-gradient(135deg, #ec4899, #be185d); 
                 padding: 40px; border-radius: 20px; margin: 50px 0; text-align: center;
@@ -2898,7 +2899,7 @@ def pagina_principala():
     </div>
     """, unsafe_allow_html=True)
     
-    # Sectiune perioada de acoperire - design modern
+    # Sectiune perioada de acoperire
     st.markdown("""
     <div style="background: linear-gradient(135deg, #1f2937, #374151); 
                 padding: 40px; border-radius: 20px; margin-top: 40px;
@@ -3125,7 +3126,7 @@ def main():
                  key=lambda x: int(x.split()[-1]), reverse=True)
         sex = st.selectbox("Sex", df_somaj['Sexe'].unique())
     
-        # Include toate județele, nu doar regiunea Centru
+        # Include toate judetele, nu doar regiunea Centru
         df_somaj = df_somaj[(df_somaj['Sexe'] == sex)]
         df_resurse = replace_total_with_romania(df_resurse)
     
